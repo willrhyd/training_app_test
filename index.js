@@ -1,7 +1,10 @@
 // esversion: 6
 
 const express = require("express");
+const app = express();
+
 const cors = require('cors');
+app.use(cors());
 var mongoose = require('mongoose');
 // var parseFIT = require('./parseFIT')
 
@@ -15,7 +18,7 @@ let activity;
 
 
 
-var mongoDB = "mongodb://localhost:27017/training_app";
+var mongoDB = "mongodb://localhost:27017";
 mongoose.connect(mongoDB, {
   useNewUrlParser: true,
   useUnifiedTopology: true
@@ -191,16 +194,14 @@ var storage = multer.diskStorage({
 
 var upload = multer({storage:storage});
 
-const app = express();
-app.use(cors());
 
 const port = 3000
 
-app.get('/', (req, res) => {
-  // parseFit(res);
-  res.sendFile(path.join(__dirname, './public', 'index.html'));
+// var corsOptions = {
+//   origin: 'http://localhost:8080',
+//   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+// }
 
-});
 
 app.get('/showRides/:dateOne.:dateTwo',  async (req, res, next) => {
   console.log(req.params.dateOne +' : ' +req.params.dateTwo)

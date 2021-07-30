@@ -44,7 +44,7 @@ import axios from 'axios';
         const formData = new FormData();
         formData.append('file', this.file);
         try{
-          await axios.post('https://free-pmc.herokuapp.com/file_upload', formData);
+          await axios.post('http://localhost:3000/file_upload', formData);
           this.message = "Uploaded";
         }
         catch(err){

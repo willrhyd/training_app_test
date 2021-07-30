@@ -60,7 +60,7 @@ export default{
 },
 methods: {
   async fetchRides(dateOne, dateTwo){
-    return axios.get('https://free-pmc.herokuapp.com/showRides/'+dateOne+'.'+dateTwo)
+    return axios.get('http://localhost:3000/showRides/'+dateOne+'.'+dateTwo)
       .catch(function (error) {console.log(error);})
 
     },
