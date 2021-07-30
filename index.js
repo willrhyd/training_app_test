@@ -4,7 +4,7 @@ const express = require("express");
 const cors = require('cors');
 var mongoose = require('mongoose');
 // var parseFIT = require('./parseFIT')
-var mongoose = require('mongoose');
+
 var formidable = require('formidable');
 const multer = require('multer');
 var path = require('path')
