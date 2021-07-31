@@ -1,7 +1,7 @@
 <template>
   <div>
     <button v-on:click="moveWeekBack">Back 1 Week</button>
-    <span>{{this.d1.toDateString()}}</span>
+    <!-- <span>{{this.d1.toDateString()}}</span> -->
     <button v-on:click="moveWeekForward">Forward 1 Week</button>
     <table style="width:100%">
     <tr>
@@ -13,23 +13,13 @@
       <th>Saturday</th>
       <th>Sunday</th>
     </tr>
-    <tr>
-      <td>{{d1.getDate()}}</td>
-      <td>{{d2.getDate()}}</td>
-      <td>{{d3.getDate()}}</td>
-      <td>{{d4.getDate()}}</td>
-      <td>{{d5.getDate()}}</td>
-      <td>{{d6.getDate()}}</td>
-      <td>{{d0.getDate()}}</td>
-    </tr>
-    <tr>
-      <td>{{r1.data}}</td>
-      <td>{{r2.data}}</td>
-      <td>{{r3.data}}</td>
-      <td>{{r4.data}}</td>
-      <td>{{r5.data}}</td>
-      <td>{{r6.data}}</td>
-      <td>{{r0.data}}</td>
+    <tr id="array-rendering">
+      <td v-for="day in days" :key="day.date" >
+        {{day.date.getDate()}}
+        <div v-for="activity in day.activities" :key="activity.distance" >
+          {{activity}}
+        </div>
+      </td>
     </tr>
   </table>
   </div>
@@ -41,7 +31,7 @@ export default{
   name: "calendar",
   data(){
     return{
-    d1:null,
+    days:[],
     d2:null,
     d3:null,
     d4:null,
@@ -66,6 +56,7 @@ methods: {
     },
   setInitialView(){
     this.view = new Date()
+
   },
   moveWeekBack(){
     this.view.setDate(this.view.getDate()-7);
@@ -82,8 +73,9 @@ methods: {
     }
 
     var dMin;
-
-    // var dMax;
+    var i;
+    var d;
+    var data;
 
     switch (this.view.getDay()){
 
@@ -194,29 +186,14 @@ methods: {
         break
 
       case 4:
-        this.d4 = new Date(this.view);
-        this.d4.setHours(23)
-
-        this.d3 = new Date(this.d4);
-        this.d3.setDate(this.d4.getDate()-1);
-
-        this.d2 = new Date(this.d4);
-        this.d2.setDate(this.d4.getDate()-2);
-
-        this.d1 = new Date(this.d4);
-        this.d1.setDate(this.d4.getDate()-3);
-
-        this.d5 = new Date(this.d4);
-        this.d5.setDate(this.d4.getDate()+1);
-
-        this.d6 = new Date(this.d4);
-        this.d6.setDate(this.d4.getDate()+2);
-
-        this.d0 = new Date(this.d4);
-        this.d0.setDate(this.d4.getDate()+3);
-
-        dMin=new Date(this.d4);
-        dMin.setDate(this.d4.getDate()-4);
+        for (i=0;i<7;i++){
+          // console.log(i);
+          d = new Date (this.view)
+          d.setDate(this.view.getDate()+i-3)
+          this.days.push(Object.create(this.days));
+          this.days[i].date = new Date(d);
+          // console.log(this.days[0].date);
+        }
         // dMax=new Date(date + 4*dayMs);
 
         this.r4 = await this.fetchRides(this.d3, this.d4);
@@ -230,29 +207,14 @@ methods: {
         break
 
       case 5:
-        this.d5 = new Date(this.view);
-        this.d5.setHours(23)
-
-        this.d4 = new Date(this.d5);
-        this.d4.setDate(this.d5.getDate()-1);
-
-        this.d3 = new Date(this.d5);
-        this.d3.setDate(this.d5.getDate()-2);
-
-        this.d2 = new Date(this.d5);
-        this.d2.setDate(this.d5.getDate()-3);
-
-        this.d1 = new Date(this.d5);
-        this.d1.setDate(this.d5.getDate()-4);
-
-        this.d6 = new Date(this.d5);
-        this.d6.setDate(this.d5.getDate()+1);
-
-        this.d0 = new Date(this.d5);
-        this.d0.setDate(this.d5.getDate()+2);
-
-        dMin=new Date(this.d5);
-        dMin.setDate(this.d5.getDate()-5);
+        for (i=0;i<7;i++){
+          // console.log(i);
+          d = new Date (this.view)
+          d.setDate(this.view.getDate()+i-4)
+          this.days.push(Object.create(this.days));
+          this.days[i].date=new Date(d);
+          // console.log(this.days[0].date);
+        }
 
         this.r4 = await this.fetchRides(this.d3, this.d4);
         this.r3 = await this.fetchRides(this.d2, this.d3);
@@ -264,48 +226,70 @@ methods: {
         break
 
       case 6:
-      this.d6 = new Date(this.view);
-      this.d6.setHours(23)
+        for (i=0;i<7;i++){
+          // console.log(i);
+          let day = {
+            date: new Date (this.view),
+            activities:[]
+          }
+          day.date.setDate(this.view.getDate()+i-5)
 
-      this.d5 = new Date(this.d6);
-      this.d5.setDate(this.d6.getDate()-1);
+          this.days.push(day);
 
-      this.d4 = new Date(this.d6);
-      this.d4.setDate(this.d6.getDate()-2);
+          // console.log(this.days[0].date);
+        }
+        console.log(this.days)
 
-      this.d3 = new Date(this.d6);
-      this.d3.setDate(this.d6.getDate()-3);
+        data = await this.fetchRides(this.days[0].date.setHours(0, 0), this.days[6].date+1);
 
-      this.d2 = new Date(this.d6);
-      this.d2.setDate(this.d6.getDate()-4);
+          if (data.data != null){
+            data.data.forEach(activity =>{
+              var activityDate = new Date(activity.date)
 
-      this.d1 = new Date(this.d6);
-      this.d1.setDate(this.d6.getDate()-5);
+              switch (activityDate.getDay()){
+                case 1:
+                  this.days[0].activities.push(activity);
+                break
+                case 2:
+                  this.days[1].activities.push(activity);
+                break
+                case 3:
+                  this.days[2].activities.push(activity);
+                break
+                case 4:
+                  this.days[3].activities.push(activity);
+                break
+                case 5:
+                  this.days[4].activities.push(activity);
+                break
+                case 6:
+                  this.days[5].activities.push(activity);
+                break
+                case 0:
+                  this.days[6].activities.push(activity);
+                break
+              }
+            })
+          }
 
-      this.d0 = new Date(this.d6);
-      this.d0.setDate(this.d6.getDate()+1);
 
-      dMin=new Date(this.d6);
-      dMin.setDate(this.d6.getDate()-6);
+        console.log(this.days[0].activities);
+
 
 // calls to future dates can be cut out
-      this.r4 = await this.fetchRides(this.d3, this.d4);
-      this.r3 = await this.fetchRides(this.d2, this.d3);
-      this.r2 = await this.fetchRides(this.d1, this.d2);
-      this.r1 = await this.fetchRides(dMin, this.d1);
-      this.r5 = await this.fetchRides(this.d4, this.d5);
-      this.r6 = await this.fetchRides(this.d5, this.d6);
-      this.r0 = await this.fetchRides(this.d6, this.d0);
+
       break
 
       case 0:
-        // this.d0 = date.getDate();
-        // this.d6 = date.getDate()-1;
-        // this.d5 = date.getDate()-2;
-        // this.d4 = date.getDate()-3;
-        // this.d3 = date.getDate()-4;
-        // this.d2 = date.getDate()-5;
-        // this.d1 = date.getDate()-6;
+        for (i=0;i<7;i++){
+          // console.log(i);
+          d = new Date (this.view)
+          d.setDate(this.view.getDate()+i-6)
+          this.days.push(Object.create(this.days));
+          this.days[i].date=new Date(d);
+          // console.log(this.days[0].date);
+        }
+
       break
 
       default:
