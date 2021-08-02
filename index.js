@@ -197,12 +197,6 @@ var upload = multer({storage:storage});
 
 const port = 3000
 
-// var corsOptions = {
-//   origin: 'http://localhost:8080',
-//   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
-// }
-
-
 app.get('/showRides/:dateOne.:dateTwo',  async (req, res, next) => {
   console.log(req.params.dateOne +' : ' +req.params.dateTwo)
   var rideArr = [];
@@ -213,6 +207,7 @@ app.get('/showRides/:dateOne.:dateTwo',  async (req, res, next) => {
      rideObj.date = docs[i].date;
      rideObj.distance = docs[i].distance;
      rideObj.np = docs[i].nPwr;
+     rideObj.id = docs[i]._id
      rideArr.push(rideObj);
    }
    console.log(rideArr);
@@ -223,6 +218,24 @@ app.get('/showRides/:dateOne.:dateTwo',  async (req, res, next) => {
 
 });
 
+app.get('/showRide/:id', async function(req, res){
+  let rides = await Ride.find({_id:req.params.id}, function (err, docs) {
+    console.log(req.params.id)
+    if(err){console.log(err)}
+
+     var rideObj = new Object();
+     rideObj.date = docs[0].date;
+     rideObj.distance = docs[0].distance;
+     rideObj.np = docs[0].nPwr;
+     rideObj.id = docs[0]._id
+
+     console.log(rideObj);
+     res.locals.rideObj = rideObj;
+   // console.log(res)
+});
+
+res.send(res.locals.rideObj);
+});
  // app.post('/file_upload', fit_upload.uploadFile, fit_upload.afterUpload, function (req, res, next){
   app.post('/file_upload', upload.any('file'), function (req, res){
     // Need to make the parse and database logging promise based then build into async middleware functions

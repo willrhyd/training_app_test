@@ -17,31 +17,51 @@
       <td v-for="day in days" :key="day.date" >
         {{day.date.getDate()}}
         <div v-for="activity in day.activities" :key="activity.distance" >
-          {{activity}}
+          <button  @click="showDialog(true)">{{activity.id}}<img src="/cycling.png"></button>
+          <span>Distance: {{activity.distance}}km</span>
+          <span>Normalised Power: {{activity.np}}w</span>
+
         </div>
       </td>
     </tr>
   </table>
+  <singleRideView
+  v-show="dialog_visible"
+    :dialog_visible="dialog_visible"
+    @dialogVisibleEvent="showDialog">
+
+  </singleRideView>
+  <div>Icons made by <a href="https://www.freepik.com" title= 'Freepik'> Freepik</a> from <a href='https://www.flaticon.com/' title='Flaticon'>www.flaticon.com</a></div>
   </div>
 </template>
 
 <script>
+import singleRideView from './singleRide.vue'
 import axios from 'axios';
 export default{
   name: "calendar",
+  components:{
+    singleRideView,
+  },
   data(){
     return{
     days:[],
-    view: null
+    view: null,
+    dialog_visible: false
     }
 },
+props:{
+  'singleRideView': Boolean,
+},
 methods: {
+  showDialog(visible) {
+      this.dialog_visible = visible;
+    },
   async fetchRides(dateOne, dateTwo){
     return axios.get('http://localhost:3000/showRides/'+dateOne+'.'+dateTwo)
       .catch(function (error) {console.log(error);})
 
     },
-
   setInitialView(){
     this.view = new Date()
 
