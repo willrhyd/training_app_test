@@ -1,6 +1,7 @@
 <template>
 
-  <div >
+  <div class="single-view">
+    <button  @click="singleRideViewClose()">Close</button>
     <h1>Single Ride View</h1>
   </div>
 
@@ -23,7 +24,11 @@ export default{
         console.log(isHidden)
     },
   },
-  methods: {async fetchSingleRide(event, id){
+  methods: {
+    singleRideViewClose(){
+      this.$emit('closeSingleView');
+    },
+    async fetchSingleRide(event, id){
     console.log(event)
       return axios.get('http://localhost:3000/showRide/'+id)
         .catch(function (error) {console.log(error);})
@@ -35,6 +40,17 @@ export default{
 
 </script>
 <style>
+.single-view{
+  border-color: black;
+  border-width: thin;
+  border-style: solid;
+  background: white;
+  padding:2.5%;
+  position: absolute;
 
+  right: 40%;
+  top: 40%;
+
+}
 
 </style>

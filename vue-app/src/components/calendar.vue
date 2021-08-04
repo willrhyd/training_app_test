@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- <button  @click="showDialog(false)">Close</button> -->
     <button v-on:click="moveWeekBack">Back 1 Week</button>
     <!-- <span>{{this.d1.toDateString()}}</span> -->
     <button v-on:click="moveWeekForward">Forward 1 Week</button>
@@ -17,7 +18,7 @@
       <td v-for="day in days" :key="day.date" >
         {{day.date.getDate()}}
         <div v-for="activity in day.activities" :key="activity.distance" >
-          <button  @click="showDialog(true)">{{activity.id}}<img src="/cycling.png"></button>
+          <button  @click="singleRideViewToggle(true)">{{activity.id}}<img src="/cycling.png"></button>
           <span>Distance: {{activity.distance}}km</span>
           <span>Normalised Power: {{activity.np}}w</span>
 
@@ -26,9 +27,10 @@
     </tr>
   </table>
   <singleRideView
-  v-show="dialog_visible"
-    :dialog_visible="dialog_visible"
-    @dialogVisibleEvent="showDialog">
+  v-show="singleRideVisible"
+    :singleRideViewToggle="singleRideVisible"
+    @singleRideViewEvent="singleRideViewToggle"
+    v-on:closeSingleView="singleRideViewToggle(false)">
 
   </singleRideView>
   <div>Icons made by <a href="https://www.freepik.com" title= 'Freepik'> Freepik</a> from <a href='https://www.flaticon.com/' title='Flaticon'>www.flaticon.com</a></div>
@@ -47,15 +49,15 @@ export default{
     return{
     days:[],
     view: null,
-    dialog_visible: false
+    singleRideVisible: false
     }
 },
 props:{
-  'singleRideView': Boolean,
+
 },
 methods: {
-  showDialog(visible) {
-      this.dialog_visible = visible;
+  singleRideViewToggle(visible) {
+      this.singleRideVisible = visible;
     },
   async fetchRides(dateOne, dateTwo){
     return axios.get('http://localhost:3000/showRides/'+dateOne+'.'+dateTwo)
