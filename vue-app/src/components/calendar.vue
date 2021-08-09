@@ -53,7 +53,7 @@ export default{
     days:[],
     view: null,
     singleRideVisible: false,
-    
+
     }
 },
 
@@ -62,7 +62,7 @@ methods: {
       this.singleRideVisible = visible;
 
     },
-
+// Currently mutating the prop directly which is apparently an anti-pattern but works well enough for now 
     async fetchSingleRide(id){
     console.log(id);
     this.selectedRide = await axios.get('http://localhost:3000/showRide/'+id)
