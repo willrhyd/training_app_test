@@ -18,7 +18,7 @@
       <td v-for="day in days" :key="day.date" >
         {{day.date.getDate()}}
         <div v-for="activity in day.activities" :key="activity.distance" >
-          <button  @click="singleRideViewToggle(true)">{{activity.id}}<img src="/cycling.png"></button>
+          <button  @click="fetchSingleRide(activity.id); singleRideViewToggle(true); " >{{activity.id}}<img src="/cycling.png"></button>
           <span>Distance: {{activity.distance}}km</span>
           <span>Normalised Power: {{activity.np}}w</span>
 
@@ -30,7 +30,9 @@
   v-show="singleRideVisible"
     :singleRideViewToggle="singleRideVisible"
     @singleRideViewEvent="singleRideViewToggle"
+    :selected-ride="selectedRide"
     v-on:closeSingleView="singleRideViewToggle(false)">
+
 
   </singleRideView>
   <div>Icons made by <a href="https://www.freepik.com" title= 'Freepik'> Freepik</a> from <a href='https://www.flaticon.com/' title='Flaticon'>www.flaticon.com</a></div>
@@ -45,20 +47,28 @@ export default{
   components:{
     singleRideView,
   },
+  props: ['selectedRide'],
   data(){
     return{
     days:[],
     view: null,
-    singleRideVisible: false
+    singleRideVisible: false,
+    
     }
 },
-props:{
 
-},
 methods: {
   singleRideViewToggle(visible) {
       this.singleRideVisible = visible;
+
     },
+
+    async fetchSingleRide(id){
+    console.log(id);
+    this.selectedRide = await axios.get('http://localhost:3000/showRide/'+id)
+        .catch(function (error) {console.log(error);})
+
+      },
   async fetchRides(dateOne, dateTwo){
     return axios.get('http://localhost:3000/showRides/'+dateOne+'.'+dateTwo)
       .catch(function (error) {console.log(error);})

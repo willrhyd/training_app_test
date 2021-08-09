@@ -2,7 +2,9 @@
 
   <div class="single-view">
     <button  @click="singleRideViewClose()">Close</button>
-    <h1>Single Ride View</h1>
+    <h1>{{selectedRide.data.date}}</h1>
+    <button @click="deleteRide(selectedRide.data.id)">Delete</button>
+
   </div>
 
 </template>
@@ -10,31 +12,39 @@
 
 
 <script>
-import axios from 'axios';
+
 export default{
   name: "singleRideView",
+  props:{
+    selectedRide: {
+      type: Object
+    }
+  },
   data(){
     return{
 
     }
+
   },
-  events:{
-    showSingleRide: function(id, isHidden){
-        console.log(id)
-        console.log(isHidden)
-    },
+  mounted(){
+    console.log(this.selectedRide)
   },
   methods: {
+    // Emit event called 'singleRideViewClose' to the Calendar component
     singleRideViewClose(){
       this.$emit('closeSingleView');
     },
-    async fetchSingleRide(event, id){
-    console.log(event)
-      return axios.get('http://localhost:3000/showRide/'+id)
-        .catch(function (error) {console.log(error);})
-
-      }
+    logData(){
+      console.log(this.selectedRide)
+    },
+    deleteRide(){
+      console.log("Send put request")
     }
+  },
+
+
+
+
 
 }
 
