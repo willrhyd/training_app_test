@@ -1,6 +1,9 @@
 <template>
   <div id="app">
-    <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
+    <div>
+      <button>Log in</button>
+      <button>Sign up</button>
+    </div>
     <FileUpload />
     <navbar msg="Navbar....eventually"/>
     <!-- <rideList msg="this is where the calendar goes"/> -->

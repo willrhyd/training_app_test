@@ -30,7 +30,7 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 var Schema = mongoose.Schema;
 
-var RideStringSchema = new Schema({
+var RideSchema = new Schema({
   data: String,
   date: Date,
   distance: Number,
@@ -38,7 +38,15 @@ var RideStringSchema = new Schema({
   tss: Number
 })
 
-var Ride = mongoose.model("Ride", RideStringSchema);
+var UserSchema = new Schema({
+  name: String,
+  ftp: Number,
+  username: String,
+  password: String,
+})
+
+var Ride = mongoose.model("Ride", RideSchema);
+var User = mongoose.model("User", UserSchema);
 
 function uploadDB(ride,res){
   console.log(ride)
@@ -47,7 +55,7 @@ function uploadDB(ride,res){
   date: ride.sessions[0].timestamp,
   distance: ride.sessions[0].total_distance,
   nPwr: getNP(ride),
-  tss: 100
+  tss: getTSS(ride)
 });
 dbRide.save(function(err){
   if (err) console.log(err);
@@ -179,6 +187,10 @@ function rideNormalisedPower(activity) {
   return normalized_power;
 }
 
+async function getTSS(activity){
+  // let ftp = await User.find(find active user)
+}
+
 
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -237,13 +249,17 @@ app.get('/showRide/:id', async function(req, res){
 res.send(res.locals.rideObj);
 });
  // app.post('/file_upload', fit_upload.uploadFile, fit_upload.afterUpload, function (req, res, next){
-  app.post('/file_upload', upload.any('file'), function (req, res){
+app.post('/file_upload', upload.any('file'), function (req, res){
     // Need to make the parse and database logging promise based then build into async middleware functions
     parseFIT(res);
     // res.redirect('/showRides');
     // uploadDB(activity);
 
   });
+
+app.delete('/file_delete/:id', function(req, res){
+    // Build delete route here
+});
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
