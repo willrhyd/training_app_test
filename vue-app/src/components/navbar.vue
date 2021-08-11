@@ -2,7 +2,9 @@
   <div class="nav">
 
     <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Nav Bar</a></li>
+      <li><a href="/" target="_blank" rel="noopener">Home</a></li>
+      <li><a href="/login" target="_blank" rel="noopener">Login</a></li>
+      <li><a href="/register" target="_blank" rel="noopener">Sign Up</a></li>
     </ul>
   </div>
 </template>

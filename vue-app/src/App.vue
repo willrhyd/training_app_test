@@ -1,32 +1,21 @@
 <template>
   <div id="app">
-    <div>
-      <button>Log in</button>
-      <button>Sign up</button>
-    </div>
-    <FileUpload />
     <navbar msg="Navbar....eventually"/>
     <!-- <rideList msg="this is where the calendar goes"/> -->
-    <calendar/>
-
+    <router-view/>
   </div>
 </template>
 
 <script>
 import navbar from './components/navbar.vue'
 // import rideList from './components/rideList.vue'
-import FileUpload from './components/upload.vue'
-import calendar from './components/calendar.vue'
 
 
 export default {
   name: 'App',
   components: {
     navbar,
-
-    FileUpload,
-    calendar
-  },
+    },
 }
 
 </script>

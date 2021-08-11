@@ -6,7 +6,12 @@ const app = express();
 const cors = require('cors');
 app.use(cors());
 var mongoose = require('mongoose');
-// var parseFIT = require('./parseFIT')
+
+var bodyParser = require('body-parser')
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+}));
 
 var formidable = require('formidable');
 const multer = require('multer');
@@ -256,6 +261,16 @@ app.post('/file_upload', upload.any('file'), function (req, res){
     // uploadDB(activity);
 
   });
+
+app.post('/register', function(req,res){
+  console.log(req.body);
+  res.send("Data received")
+});
+
+app.post('/login', function(req,res){
+  console.log(req.body);
+  res.send("Logged in")
+});
 
 app.delete('/file_delete/:id', function(req, res){
     // Build delete route here

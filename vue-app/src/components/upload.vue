@@ -23,7 +23,7 @@
 import axios from 'axios';
 
   export default {
-    name: 'FileUpload',
+    name: 'fileUpload',
     data(){
       return{
         file:"",
@@ -44,7 +44,7 @@ import axios from 'axios';
         const formData = new FormData();
         formData.append('file', this.file);
         try{
-          await axios.post('http://localhost:3000/file_upload', formData);
+          await axios.post('/file_upload', formData);
           this.message = "Uploaded";
         }
         catch(err){

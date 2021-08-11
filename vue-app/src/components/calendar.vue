@@ -1,5 +1,6 @@
 <template>
   <div>
+    <fileUpload />
     <!-- <button  @click="showDialog(false)">Close</button> -->
     <button v-on:click="moveWeekBack">Back 1 Week</button>
     <!-- <span>{{this.d1.toDateString()}}</span> -->
@@ -41,11 +42,13 @@
 
 <script>
 import singleRideView from './singleRide.vue'
+import fileUpload from './upload.vue'
 import axios from 'axios';
 export default{
   name: "calendar",
   components:{
     singleRideView,
+    fileUpload
   },
   props: ['selectedRide'],
   data(){
@@ -62,7 +65,7 @@ methods: {
       this.singleRideVisible = visible;
 
     },
-// Currently mutating the prop directly which is apparently an anti-pattern but works well enough for now 
+// Currently mutating the prop directly which is apparently an anti-pattern but works well enough for now
     async fetchSingleRide(id){
     console.log(id);
     this.selectedRide = await axios.get('http://localhost:3000/showRide/'+id)
