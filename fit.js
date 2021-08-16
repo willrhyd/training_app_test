@@ -1,61 +1,39 @@
 
 
 const EasyFit = require('./node_modules/easy-fit/dist/easy-fit.js').default;
-let activity;
-
 const fs = require('fs');
 
-// Exported functions
-const parse = async function() {
+function parseFIT (req, res, next) {
+   fs.readFile("temp/file.fit", function(err, content) {
+    // Create a EasyFit instance (options argument is optional)
+    var easyFit = new EasyFit({
+      force: true,
+      speedUnit: 'km/h',
+      lengthUnit: 'km',
+      temperatureUnit: 'kelvin',
+      elapsedRecordField: true,
+      mode: 'cascade',
+    });
 
-  console.log("Trying to parse")
-  await read();
+    // Parse your file
+   easyFit.parse(content, function(error, data) {
+      // Handle result of parse method
+      if (error) {
+        console.log(error);
+      } else {
+        req.parsedFile = data.activity;
+        }
+    });
+    next();
+  });
 
 }
-
 
 function getNP(activity){
-  // console.log(activity.sessions[0].laps[2].records.length);
-  // console.log(activity.sessions);
   remove_stops(activity);
-
-  // console.log(activity.sessions[0].laps[2].records.length);
   var np = rideNormalisedPower(activity);
-  // console.log(activity)
   return np;
 }
-
-
-exports.parse = parse;
-exports.getNP = getNP;
-
-// Module functions
-const read = fs.readFile("temp/file.fit", function(err, content) {
-  var ride;
-  var easyFit = new EasyFit({
-    force: true,
-    speedUnit: 'km/h',
-    lengthUnit: 'km',
-    temperatureUnit: 'kelvin',
-    elapsedRecordField: true,
-    mode: 'cascade',
-  });
-
-  // Parse your file
-  easyFit.parse(content, function(error, data) {
-    // Handle result of parse method
-    if (error) {
-      console.log(error);
-    } else {
-      // console.log(data.activity);
-      ride = data.activity;
-    }
-
-  });
-
-  console.log("Result of Ride: " + ride);
-});
-
 
 function remove_stops(activity) {
   activity.sessions[0].laps.forEach((lap) => {
@@ -88,7 +66,6 @@ function de_Lap_power(activity) {
 }
 
 function rideNormalisedPower(activity) {
-  console.log(activity.sessions[0])
   var power_array = de_Lap_power(activity);
   var total_rolling_power = 0;
   var rolling_average = 0;
@@ -116,18 +93,15 @@ function rideNormalisedPower(activity) {
       total_rolling_power = 0;
     }
   }
-
   for (x in rolling_average_array) {
     rolling_average_powered_array.push(Math.pow(rolling_average_array[x], 4));
   }
-
   for (z in rolling_average_powered_array) {
     if (isNaN(rolling_average_powered_array[z]) === false) {
       total_rolling_average_powered += rolling_average_powered_array[z];
     }
   }
   console.log("Total of rolling averages raised ^4:" + total_rolling_average_powered);
-
   avg_powered_values = total_rolling_average_powered / rolling_average_powered_array.length;
   console.log("Average of values raised to ^4:" + avg_powered_values);
   normalized_power = Math.pow(avg_powered_values, 0.25);
@@ -135,3 +109,6 @@ function rideNormalisedPower(activity) {
   activity.sessions[0].normalized_power = normalized_power;
   return normalized_power;
 }
+
+exports.parseFIT=parseFIT;
+exports.getNP = getNP;
