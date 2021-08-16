@@ -3,12 +3,15 @@
 const express = require("express");
 const app = express();
 
+const passport = require('passport')
+LocalStrategy = require('passport-local').Strategy;
+
 const cors = require('cors');
 app.use(cors());
 var mongoose = require('mongoose');
 
 var bodyParser = require('body-parser')
-app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.json() );       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
 }));
@@ -21,20 +24,35 @@ var shortid = require('shortid')
 const EasyFit = require('./node_modules/easy-fit/dist/easy-fit.js').default;
 let activity;
 
+passport.use(new LocalStrategy(
+  function(username, password, done) {
+    User.findOne({ username: username }, function (err, user) {
+      if (err) { return done(err); }
+      if (!user) {
+        return done(null, false, { message: 'Incorrect username.' });
+      }
+      if (!user.validPassword(password)) {
+        return done(null, false, { message: 'Incorrect password.' });
+      }
+      return done(null, user);
+    });
+  }
+));
 
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './temp');
+  },
+  // By default, multer removes file extensions so let's add them back
+  filename: function(req, file, cb) {
+    cb(null, file.fieldname + path.parse(file.originalname).ext);
 
-var mongoDB = "mongodb://localhost:27017";
-mongoose.connect(mongoDB, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+    console.log("File uploaded successfully")
+  }
+});
 
-var db = mongoose.connection;
-
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-
+var upload = multer({storage:storage});
 var Schema = mongoose.Schema;
-
 var RideSchema = new Schema({
   data: String,
   date: Date,
@@ -53,24 +71,34 @@ var UserSchema = new Schema({
 var Ride = mongoose.model("Ride", RideSchema);
 var User = mongoose.model("User", UserSchema);
 
-function uploadDB(ride,res){
-  console.log(ride)
-  const dbRide = new Ride({
-  data: JSON.stringify(ride.sessions[0]),
-  date: ride.sessions[0].timestamp,
-  distance: ride.sessions[0].total_distance,
-  nPwr: getNP(ride),
-  tss: getTSS(ride)
+var mongoDB = "mongodb://localhost:27017";
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+mongoose.connect(mongoDB, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
 });
+
+function uploadDB(req, res, next){
+
+  const dbRide = new Ride({
+  data: JSON.stringify(req.parsedFile.sessions[0]),
+  date: req.parsedFile.sessions[0].timestamp,
+  distance: req.parsedFile.sessions[0].total_distance,
+  nPwr: getNP(req.parsedFile),
+  // tss: getTSS(req.parsedFile)
+
+  });
+
 dbRide.save(function(err){
   if (err) console.log(err);
-  res.send("Ride uploaded")
 });
+next();
 }
 
-function parseFIT (res) {
-  fs.readFile("temp/file.fit", function(err, content) {
-    // fs.readFile("temp\ride_file-1624827283371.fit", function(err, content) {
+function parseFIT (req, res, next) {
+   fs.readFile("temp/file.fit", function(err, content) {
     // Create a EasyFit instance (options argument is optional)
     var easyFit = new EasyFit({
       force: true,
@@ -82,34 +110,22 @@ function parseFIT (res) {
     });
 
     // Parse your file
-    easyFit.parse(content, function(error, data) {
-
+   easyFit.parse(content, function(error, data) {
       // Handle result of parse method
       if (error) {
         console.log(error);
       } else {
-        // console.log(data.activity);
-        var ride = data.activity;
-        // console.log(activity)
-        // console.log(data.activity);
-        uploadDB(data.activity, res);
-      }
-
+        req.parsedFile = data.activity;
+        }
     });
-
-
+    next();
   });
+
 }
 
-
 function getNP(activity){
-  // console.log(activity.sessions[0].laps[2].records.length);
-  // console.log(activity.sessions);
   remove_stops(activity);
-
-  // console.log(activity.sessions[0].laps[2].records.length);
   var np = rideNormalisedPower(activity);
-  // console.log(activity)
   return np;
 }
 
@@ -144,7 +160,6 @@ function de_Lap_power(activity) {
 }
 
 function rideNormalisedPower(activity) {
-  console.log(activity.sessions[0])
   var power_array = de_Lap_power(activity);
   var total_rolling_power = 0;
   var rolling_average = 0;
@@ -172,18 +187,15 @@ function rideNormalisedPower(activity) {
       total_rolling_power = 0;
     }
   }
-
   for (x in rolling_average_array) {
     rolling_average_powered_array.push(Math.pow(rolling_average_array[x], 4));
   }
-
   for (z in rolling_average_powered_array) {
     if (isNaN(rolling_average_powered_array[z]) === false) {
       total_rolling_average_powered += rolling_average_powered_array[z];
     }
   }
   console.log("Total of rolling averages raised ^4:" + total_rolling_average_powered);
-
   avg_powered_values = total_rolling_average_powered / rolling_average_powered_array.length;
   console.log("Average of values raised to ^4:" + avg_powered_values);
   normalized_power = Math.pow(avg_powered_values, 0.25);
@@ -197,19 +209,7 @@ async function getTSS(activity){
 }
 
 
-var storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, './temp');
-  },
-  // By default, multer removes file extensions so let's add them back
-  filename: function(req, file, cb) {
-    cb(null, file.fieldname + path.parse(file.originalname).ext);
 
-    console.log("File uploaded successfully")
-  }
-});
-
-var upload = multer({storage:storage});
 
 
 const port = 3000
@@ -254,9 +254,9 @@ app.get('/showRide/:id', async function(req, res){
 res.send(res.locals.rideObj);
 });
  // app.post('/file_upload', fit_upload.uploadFile, fit_upload.afterUpload, function (req, res, next){
-app.post('/file_upload', upload.any('file'), function (req, res){
+app.post('/file_upload', upload.any('file'), parseFIT, uploadDB, function (req, res){
     // Need to make the parse and database logging promise based then build into async middleware functions
-    parseFIT(res);
+    res.send('Ride saved to DB');
     // res.redirect('/showRides');
     // uploadDB(activity);
 
