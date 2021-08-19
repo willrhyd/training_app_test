@@ -178,6 +178,11 @@ app.post('/login', passport.authenticate('local'), function(req, res) {
 
 });
 
+app.get('/logout', function(req, res){
+  req.logout();
+  res.status(200).json({msg:"Signed out successfully"});
+});
+
 app.delete('/file_delete/:id', function(req, res) {
   // Build delete route here
 });

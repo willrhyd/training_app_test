@@ -1,8 +1,8 @@
 <template>
   <div id="app">
-    <navbar msg="Navbar....eventually"/>
+    <navbar :seen='seen' msg="Navbar....eventually"/>
     <!-- <rideList msg="this is where the calendar goes"/> -->
-    <router-view/>
+    <router-view @loggedIn="loggedIn"/>
   </div>
 </template>
 
@@ -17,6 +17,13 @@ export default {
   components: {
     navbar,
     },
+  props:['seen'],
+  methods:{
+    loggedIn(){
+      this.seen = false;
+    }
+  }
+
 }
 
 </script>
