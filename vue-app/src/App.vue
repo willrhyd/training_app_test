@@ -21,6 +21,7 @@ export default {
   methods:{
     loggedIn(){
       this.seen = false;
+      this.$router.push('/calendar');
     }
   }
 

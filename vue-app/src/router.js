@@ -10,8 +10,8 @@ Vue.use(Router)
 export default new Router ({
   mode: 'history',
   routes:[
-    {path:'/', component: calendar},
-    {path:'/login', component: login},
+    {path:'/', component: login},
+    {path:'/calendar', component: calendar},
     {path:'/register', component: register}
   ]
 })

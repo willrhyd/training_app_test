@@ -28,6 +28,7 @@ export default{
     }
   },
   methods:{
+    // Log in and emit 'loggedIn' event to router
     async handleSubmit(){
       try{
       const response = await axios.post('/login',{
@@ -35,11 +36,11 @@ export default{
         password: this.password
       });
       console.log(response);
-      this.$router.push('/');
       this.$emit('loggedIn')
+      this.$router.push('/calendar');
     } catch (err){
         console.log(err)
-        this.$router.push('/login');
+        this.$router.push('/');
       }
 
 

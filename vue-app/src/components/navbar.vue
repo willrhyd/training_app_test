@@ -2,10 +2,10 @@
   <div class="nav">
 
     <ul v-on:loggedIn="seen!=seen">
-      <li><a href="/" target="_blank" rel="noopener">Home</a></li>
-      <li v-show="seen"><a href="/login" target="_blank" rel="noopener">Login</a></li>
+      <li v-show="!seen"><a href="/calendar" target="_blank" rel="noopener">Calendar</a></li>
+      <li v-show="!seen"><a href="/dashboard" target="_blank" rel="noopener">Dashboard</a></li>
       <li v-show="seen"><a href="/register" target="_blank" rel="noopener">Sign Up</a></li>
-      <li v-show="!seen"><a v-on:click="handleLogout" href="/login" target="_blank" rel="noopener">Logout</a></li>
+      <li v-show="!seen"><a v-on:click="handleLogout" href="/" target="_blank" rel="noopener">Logout</a></li>
     </ul>
   </div>
 </template>
@@ -24,7 +24,10 @@ export default {
      async handleLogout(){
       await axios.get('http://localhost:3000/logout')
         .catch((err)=>{console.log(err);})
-        .then(this.seen=false);
+        .then(()=>{
+          this.seen = false;
+          this.$router.push('/login')
+        });
     }
   }
 }
