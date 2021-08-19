@@ -2,8 +2,8 @@
   <div>
     <form @submit.prevent='handleSubmit'>
       <div class= 'form-group'>
-        <label>Email</label>
-        <input type='text' class='form-control' v-model='email' placeholder='Email' />
+        <label>Username</label>
+        <input type='text' class='form-control' v-model='username' placeholder='Username' />
       </div>
       <div class= 'form-group'>
         <label>Password</label>
@@ -23,19 +23,26 @@ export default{
   name: 'login',
   data(){
     return{
-      email:'',
+      username:'',
       password:''
     }
   },
   methods:{
     async handleSubmit(){
+      try{
       const response = await axios.post('/login',{
-        email: this.email,
+        username: this.username,
         password: this.password
       });
-
       console.log(response);
       this.$router.push('/');
+    } catch (err){
+        console.log(err)
+        this.$router.push('/login');
+      }
+
+
+
     }
   }
 }

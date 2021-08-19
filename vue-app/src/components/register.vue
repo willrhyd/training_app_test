@@ -11,6 +11,10 @@
       <input type='text' class='form-control' v-model='lastName' placeholder='Last Name' />
     </div>
     <div class= 'form-group'>
+      <label>User Name</label>
+      <input type='text' class='form-control' v-model='username' placeholder='Username' />
+    </div>
+    <div class= 'form-group'>
       <label>Email</label>
       <input type='text' class='form-control' v-model='email' placeholder='Email' />
     </div>
@@ -35,6 +39,7 @@ export default{
     return{
     firstName:'',
     lastName:'',
+    username:'',
     email:'',
     password:'',
     passwordConfirm:''
@@ -46,6 +51,7 @@ export default{
           const response = await axios.post('/register',{
             firstName: this.firstName,
             lastName: this.lastName,
+            username: this.username,
             email: this.email,
             password: this.password,
             passwordConfirm: this.passwordConfirm

@@ -93,13 +93,10 @@ methods: {
   },
 
   async assignDatesAndRides(){
-  this.days = [];
-
+    this.days = [];
     if (this.view == null){
       this.setInitialView();
     }
-
-
     var i;
     var d;
     var data;
@@ -114,17 +111,15 @@ methods: {
             activities:[]
           }
           day.date.setDate(this.view.getDate()+i)
-
           this.days.push(day);
-
           // console.log(this.days[0].date);
         }
         console.log(this.days)
 
         data = await this.fetchRides(this.days[0].date.setHours(0, 0), this.days[6].date+1);
-
+        try {
           if (data.data != null){
-            data.data.forEach(activity =>{
+            data.data.forEach((activity) =>{
               var activityDate = new Date(activity.date)
 
               switch (activityDate.getDay()){
@@ -151,6 +146,10 @@ methods: {
                 break
               }
             })
+          }
+        }
+          catch (err){
+            if(err){console.log(err)}
           }
 
         break
@@ -255,11 +254,13 @@ methods: {
       case 4:
         for (i=0;i<7;i++){
           // console.log(i);
-          d = new Date (this.view)
-          d.setDate(this.view.getDate()+i-3)
-          this.days.push(Object.create(this.days));
-          this.days[i].date = new Date(d);
-          // console.log(this.days[0].date);
+          let day = {
+            date: new Date (this.view),
+            activities:[]
+          }
+          day.date.setDate(this.view.getDate()+i-3)
+
+          this.days.push(day);
         }
         // dMax=new Date(date + 4*dayMs);
 
@@ -267,8 +268,8 @@ methods: {
 
           if (data.data != null){
             data.data.forEach(activity =>{
-              var activityDate = new Date(activity.date)
 
+              var activityDate = new Date(activity.date)
               switch (activityDate.getDay()){
                 case 1:
                   this.days[0].activities.push(activity);
@@ -289,21 +290,24 @@ methods: {
                   this.days[5].activities.push(activity);
                 break
                 case 0:
-                  this.days[6].activities.push(activity);
+                  this.days[6].activities.push();
                 break
               }
             })
           }
-
+          console.log(this.days[6].activities)
         break
 
       case 5:
         for (i=0;i<7;i++){
           // console.log(i);
-          d = new Date (this.view)
-          d.setDate(this.view.getDate()+i-4)
-          this.days.push(Object.create(this.days));
-          this.days[i].date=new Date(d);
+          let day = {
+            date: new Date (this.view),
+            activities:[]
+          }
+          day.date.setDate(this.view.getDate()+i-4)
+
+          this.days.push(day);
           // console.log(this.days[0].date);
         }
 

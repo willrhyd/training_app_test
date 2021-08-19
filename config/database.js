@@ -25,7 +25,8 @@ const RideSchema = new Schema({
   date: Date,
   distance: Number,
   nPwr: Number,
-  tss: Number
+  tss: Number,
+  user: String,
 })
 
 const Ride = mongoose.model("Ride", RideSchema);

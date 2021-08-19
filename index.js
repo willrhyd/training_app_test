@@ -5,7 +5,7 @@ const app = express();
 const mongoose = require('mongoose');
 const connection = require('./config/database')
 const passport = require('passport')
-const password = require('./lib/passwordUtils')
+const password = require('./lib/passwordUtils');
 require('./config/passport')
 const session = require('express-session');
 const crypto = require('crypto');
@@ -49,14 +49,6 @@ app.use(express.json()); // to support JSON-encoded bodies
 app.use(express.urlencoded({ // to support URL-encoded bodies
   extended: true
 }));
-app.use(passport.initialize());
-app.use(passport.session());
-
-
-//Connect to database and set the Ride model from databse.js
-connection.connect;
-const Ride = connection.Ride;
-
 app.use(session({
   secret: process.env.SECRET,
   resave: false,
@@ -71,6 +63,21 @@ app.use(session({
   },
   unset: 'destroy'
 }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+function ensureAuthenticated(req, res, next) {
+  console.log(`Is logged in: ${req.isAuthenticated()}`);
+  if (req.isAuthenticated()) { return next(); }
+  res.status(401).json({msg:"Not logged in"})
+}
+
+//Connect to database and set the Ride model from databse.js
+connection.connect;
+const Ride = connection.Ride;
+const User = connection.User;
+
+
 
 function uploadDB(req, res, next) {
   const dbRide = new Ride({
@@ -78,6 +85,7 @@ function uploadDB(req, res, next) {
     date: req.parsedFile.sessions[0].timestamp,
     distance: req.parsedFile.sessions[0].total_distance,
     nPwr: fit.getNP(req.parsedFile),
+    user: req.user.username
   });
   dbRide.save(function(err) {
     if (err) console.log(err);
@@ -89,14 +97,15 @@ function uploadDB(req, res, next) {
 //   res.send("<h1>Hello World of Sessions</h1>")
 // });
 
-app.get('/showRides/:dateOne.:dateTwo', async (req, res) => {
+app.get('/showRides/:dateOne.:dateTwo', ensureAuthenticated, async (req, res, next) => {
   console.log(req.session);
+  console.log(req.user.username);
   var rideArr = [];
   let rides = await Ride.find({
     date: {
       $gt: req.params.dateOne,
       $lt: req.params.dateTwo
-    }
+    }, user: req.user.username
   }, function(err, docs) {
     if (err) {
       console.log(err)
@@ -109,8 +118,10 @@ app.get('/showRides/:dateOne.:dateTwo', async (req, res) => {
       rideObj.id = docs[i]._id
       rideArr.push(rideObj);
     }
+    console.log(rideArr);
     res.locals.rideArray = rideArr;
-    res.send(res.locals.rideArray);
+    res.send(rideArr);
+
   });
 });
 
@@ -132,27 +143,39 @@ app.get('/showRide/:id', async function(req, res) {
   res.send(res.locals.rideObj);
 });
 
-app.post('/file_upload', upload.any('file'), fit.parseFIT, uploadDB, function(req, res) {
+app.post('/file_upload', ensureAuthenticated, upload.any('file'), fit.parseFIT, uploadDB, function(req, res) {
   console.log('Ride saved to DB');
 });
 
 app.post('/register', function(req, res) {
+  console.log(req.body.username)
+  // This could do with going into middleware
   if (req.body.password!==req.body.passwordConfirm) {
     return res.status(500).json({msg:"Passwords do not match"})
   }
-  console.log("passwords match");
-  password.getPassword(req.body.password);
-  return res.status(200).json({msg:"Sign up successful"});
-  res.redirect('/login')
+  const hashSalt = password.genPassword(req.body.password);
+  const regUser = new User({
+    name: `${req.body.firstName} ${req.body.lastName}`,
+    ftp:'',
+    username: req.body.username,
+    hash: hashSalt.hash,
+    salt: hashSalt.salt,
+  });
+  regUser.save()
+    .then((user) =>{
+      console.log(user);
+  })
+  .catch((err)=>{
+    console.log(err)
+  });
+  res.status(200).json({msg:"Sign up successful"});
+
 });
 
-app.post('/login',
-  passport.authenticate('local', { successRedirect: '/',
-    failureRedirect: '/login',
-    failureFlash: true }),
-  function(req, res) {
+app.post('/login', passport.authenticate('local'), function(req, res) {
 
-    res.redirect('/'+req.user.username)
+  res.status(200).json({msg:"Signed in successfully"});
+
 });
 
 app.delete('/file_delete/:id', function(req, res) {
