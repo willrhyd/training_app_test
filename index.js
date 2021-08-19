@@ -2,16 +2,22 @@
 
 const express = require("express");
 const app = express();
-const passport = require('passport')
-LocalStrategy = require('passport-local').Strategy;
-const cors = require('cors');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser')
+const connection = require('./config/database')
+const passport = require('passport')
+const password = require('./lib/passwordUtils')
+require('./config/passport')
+const session = require('express-session');
+const crypto = require('crypto');
+const MongoStore = require('connect-mongo');
+const cors = require('cors');
+const cookieParser = require('cookie-parser')
 const formidable = require('formidable');
 const multer = require('multer');
 const path = require('path')
 const shortid = require('shortid')
 const fit = require('./fit');
+require('dotenv').config();
 const port = 3000
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
@@ -28,62 +34,43 @@ const upload = multer({
   storage: storage
 });
 
-app.use(cors());
-app.use(bodyParser.json()); // to support JSON-encoded bodies
-app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
-  extended: true
+app.use(cookieParser())
+app.use(cors({
+  origin: [
+              'http://localhost:8080',
+              'https://localhost:8080'
+            ],
+            credentials: true,
+            exposedHeaders: ['set-cookie']
+
 }));
 
-passport.use(new LocalStrategy(
-  function(username, password, done) {
-    User.findOne({
-      username: username
-    }, function(err, user) {
-      if (err) {
-        return done(err);
-      }
-      if (!user) {
-        return done(null, false, {
-          message: 'Incorrect username.'
-        });
-      }
-      if (!user.validPassword(password)) {
-        return done(null, false, {
-          message: 'Incorrect password.'
-        });
-      }
-      return done(null, user);
-    });
-  }
-));
+app.use(express.json()); // to support JSON-encoded bodies
+app.use(express.urlencoded({ // to support URL-encoded bodies
+  extended: true
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
-const Schema = mongoose.Schema;
-const RideSchema = new Schema({
-  data: String,
-  date: Date,
-  distance: Number,
-  nPwr: Number,
-  tss: Number
-})
 
-const UserSchema = new Schema({
-  name: String,
-  ftp: Number,
-  username: String,
-  password: String,
-})
+//Connect to database and set the Ride model from databse.js
+connection.connect;
+const Ride = connection.Ride;
 
-const Ride = mongoose.model("Ride", RideSchema);
-const User = mongoose.model("User", UserSchema);
-
-const mongoDB = "mongodb://localhost:27017";
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
-
-mongoose.connect(mongoDB, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
+app.use(session({
+  secret: process.env.SECRET,
+  resave: false,
+  saveUninitialized: true,
+  store: MongoStore.create({
+    mongoUrl: "mongodb://localhost:27017/trainingApp",
+    collectionName: 'sessions' // See below for details
+  }),
+  cookie: {
+    maxAge: 600000,
+    httpOnly: false
+  },
+  unset: 'destroy'
+}));
 
 function uploadDB(req, res, next) {
   const dbRide = new Ride({
@@ -97,8 +84,13 @@ function uploadDB(req, res, next) {
   });
   next();
 }
+//
+// app.get('/', (req,res) => {
+//   res.send("<h1>Hello World of Sessions</h1>")
+// });
 
-app.get('/showRides/:dateOne.:dateTwo', async (req, res, next) => {
+app.get('/showRides/:dateOne.:dateTwo', async (req, res) => {
+  console.log(req.session);
   var rideArr = [];
   let rides = await Ride.find({
     date: {
@@ -145,13 +137,22 @@ app.post('/file_upload', upload.any('file'), fit.parseFIT, uploadDB, function(re
 });
 
 app.post('/register', function(req, res) {
-  console.log(req.body);
-  res.send("Data received")
+  if (req.body.password!==req.body.passwordConfirm) {
+    return res.status(500).json({msg:"Passwords do not match"})
+  }
+  console.log("passwords match");
+  password.getPassword(req.body.password);
+  return res.status(200).json({msg:"Sign up successful"});
+  res.redirect('/login')
 });
 
-app.post('/login', function(req, res) {
-  console.log(req.body);
-  res.send("Logged in")
+app.post('/login',
+  passport.authenticate('local', { successRedirect: '/',
+    failureRedirect: '/login',
+    failureFlash: true }),
+  function(req, res) {
+
+    res.redirect('/'+req.user.username)
 });
 
 app.delete('/file_delete/:id', function(req, res) {

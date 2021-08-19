@@ -42,18 +42,21 @@ export default{
   },
   methods:{
       async handleSubmit(){
-      const response = await axios.post('/register',{
-        firstName: this.firstName,
-        lastName: this.lastName,
-        email: this.email,
-        password: this.password,
-        passwordConfirm: this.passwordConfirm
-      });
-
-      console.log(response);
-      this.$router.push('/login');
-    },
-  }
+        try {
+          const response = await axios.post('/register',{
+            firstName: this.firstName,
+            lastName: this.lastName,
+            email: this.email,
+            password: this.password,
+            passwordConfirm: this.passwordConfirm
+          });
+          console.log(response)
+          this.$router.push('/login');
+        } catch(err) {
+          console.log(err)
+          this.$router.push('/register');
+    }
+    }
 }
-
+}
 </script>

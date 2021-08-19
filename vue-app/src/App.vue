@@ -8,6 +8,7 @@
 
 <script>
 import navbar from './components/navbar.vue'
+
 // import rideList from './components/rideList.vue'
 
 
