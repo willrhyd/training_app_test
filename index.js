@@ -58,7 +58,7 @@ app.use(session({
     collectionName: 'sessions' // See below for details
   }),
   cookie: {
-    maxAge: 600000,
+    maxAge: 100*60*60*24,
     httpOnly: false
   },
   unset: 'destroy'
@@ -173,6 +173,7 @@ app.post('/register', function(req, res) {
 });
 
 app.post('/login', passport.authenticate('local'), function(req, res) {
+  
 
   res.status(200).json({msg:"Signed in successfully"});
 

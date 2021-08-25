@@ -1,6 +1,7 @@
 <template>
   <div>
-    <form @submit.prevent='handleSubmit'>
+    <p v-if="showError" id="error">Username or Password is incorrect</p>
+    <form @submit.prevent='submit'>
       <div class= 'form-group'>
         <label>Username</label>
         <input type='text' class='form-control' v-model='username' placeholder='Username' />
@@ -18,33 +19,35 @@
 </template>
 
 <script>
-import axios from 'axios'
+import { mapActions } from "vuex";
 export default{
   name: 'login',
   data(){
     return{
-      username:'',
-      password:''
+        username:'',
+        password:'',
+        showError: false,
     }
   },
   methods:{
+    ...mapActions(["LogIn"]),
     // Log in and emit 'loggedIn' event to router
-    async handleSubmit(){
-      try{
-      const response = await axios.post('/login',{
+    async submit(){
+      const User = {
         username: this.username,
         password: this.password
-      });
-      console.log(response);
-      this.$emit('loggedIn')
-      this.$router.push('/calendar');
-    } catch (err){
+      }
+      try{
+        const login = await this.LogIn(User);
+        if(login.status==200){
+        this.$router.push('/calendar');
+        this.showError = false
+        }
+      } catch (err){
         console.log(err)
+        this.showError = true
         this.$router.push('/');
       }
-
-
-
     }
   }
 }

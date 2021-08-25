@@ -27,7 +27,7 @@ export default{
 
   },
   mounted(){
-    console.log(this.selectedRide)
+    // console.log(this.selectedRide)
   },
   methods: {
     // Emit event called 'singleRideViewClose' to the Calendar component
@@ -35,7 +35,7 @@ export default{
       this.$emit('closeSingleView');
     },
     logData(){
-      console.log(this.selectedRide)
+      // console.log(this.selectedRide)
     },
     deleteRide(){
       console.log("Send put request")

@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent='handleSubmit'>
+  <form @submit.prevent='submit'>
     <h3>Sign up</h3>
 
     <div class= 'form-group'>
@@ -32,36 +32,33 @@
 </template>
 
 <script>
-import axios from 'axios'
+import { mapActions } from "vuex";
 export default{
   name:'register',
   data(){
     return{
-    firstName:'',
-    lastName:'',
-    username:'',
-    email:'',
-    password:'',
-    passwordConfirm:''
+
+    form:{
+      firstName:'',
+      lastName:'',
+      username:'',
+      email:'',
+      password:'',
+      passwordConfirm:''
+    },
+  showError: false
   }
-  },
+},
   methods:{
-      async handleSubmit(){
+    ...mapActions(["Register"]),
+      async submit(){
         try {
-          const response = await axios.post('/register',{
-            firstName: this.firstName,
-            lastName: this.lastName,
-            username: this.username,
-            email: this.email,
-            password: this.password,
-            passwordConfirm: this.passwordConfirm
-          });
-          console.log(response)
-          this.$router.push('/login');
-        } catch(err) {
-          console.log(err)
-          this.$router.push('/register');
-    }
+          await this.Register(this.form);
+          this.$router.push("/calendar");
+          this.showError = false
+      } catch (error) {
+          this.showError = true
+      }
     }
 }
 }

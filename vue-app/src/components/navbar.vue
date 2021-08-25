@@ -1,33 +1,28 @@
 <template>
   <div class="nav">
-
-    <ul v-on:loggedIn="seen!=seen">
-      <li v-show="!seen"><a href="/calendar" target="_blank" rel="noopener">Calendar</a></li>
-      <li v-show="!seen"><a href="/dashboard" target="_blank" rel="noopener">Dashboard</a></li>
-      <li v-show="seen"><a href="/register" target="_blank" rel="noopener">Sign Up</a></li>
-      <li v-show="!seen"><a v-on:click="handleLogout" href="/" target="_blank" rel="noopener">Logout</a></li>
+    <ul>
+      <li v-if='isLoggedIn'><a href="/user" target="_blank" rel="noopener">{{user}}</a></li>
+      <li v-if='isLoggedIn'><a href="/calendar" target="_blank" rel="noopener">Calendar</a></li>
+      <li v-if='isLoggedIn'><a href="/dashboard" target="_blank" rel="noopener">Dashboard</a></li>
+      <li v-if='isLoggedIn==false'><a href="/register" target="_blank" rel="noopener">Sign Up</a></li>
+      <li v-if='isLoggedIn'><a v-on:click="logout" href="/" target="_blank" rel="noopener">Logout</a></li>
     </ul>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
+
 export default {
   name: 'navbar',
-  props:{
-    seen:{
-      type:Boolean,
-      default: true
-    }
-  },
+
+  computed : {
+     isLoggedIn : function(){return this.$store.getters.isAuthenticated},
+     user : function(){return this.$store.getters.StateUser}
+   },
   methods:{
-     async handleLogout(){
-      await axios.get('http://localhost:3000/logout')
-        .catch((err)=>{console.log(err);})
-        .then(()=>{
-          this.seen = false;
-          this.$router.push('/login')
-        });
+     async logout(){
+       await this.$store.dispatch('LogOut');
+        this.$router.push('/');
     }
   }
 }
