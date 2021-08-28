@@ -77,14 +77,19 @@ connection.connect;
 const Ride = connection.Ride;
 const User = connection.User;
 
-
-
 function uploadDB(req, res, next) {
+  const nPwr = fit.getNP(req.parsedFile)
+  const duration = req.parsedFile.sessions[0].total_timer_time;
+
+
+  console.log(req.user.ftp)
   const dbRide = new Ride({
     data: JSON.stringify(req.parsedFile.sessions[0]),
     date: req.parsedFile.sessions[0].timestamp,
     distance: req.parsedFile.sessions[0].total_distance,
-    nPwr: fit.getNP(req.parsedFile),
+    duration: duration,
+    nPwr: nPwr,
+    tss: fit.getTss(req.user.ftp, nPwr, duration),
     user: req.user.username
   });
   dbRide.save(function(err) {
@@ -115,7 +120,8 @@ app.get('/showRides/:dateOne.:dateTwo', ensureAuthenticated, async (req, res, ne
       rideObj.date = docs[i].date;
       rideObj.distance = docs[i].distance;
       rideObj.np = docs[i].nPwr;
-      rideObj.id = docs[i]._id
+      rideObj.tss = docs[i].tss;
+      rideObj.id = docs[i]._id;
       rideArr.push(rideObj);
     }
     console.log(rideArr);
@@ -148,7 +154,7 @@ app.post('/file_upload', ensureAuthenticated, upload.any('file'), fit.parseFIT, 
 });
 
 app.post('/register', function(req, res) {
-  console.log(req.body.username)
+  console.log(req.body)
   // This could do with going into middleware
   if (req.body.password!==req.body.passwordConfirm) {
     return res.status(500).json({msg:"Passwords do not match"})
@@ -156,7 +162,7 @@ app.post('/register', function(req, res) {
   const hashSalt = password.genPassword(req.body.password);
   const regUser = new User({
     name: `${req.body.firstName} ${req.body.lastName}`,
-    ftp:'',
+    ftp: 300,
     username: req.body.username,
     hash: hashSalt.hash,
     salt: hashSalt.salt,
@@ -173,7 +179,6 @@ app.post('/register', function(req, res) {
 });
 
 app.post('/login', passport.authenticate('local'), function(req, res) {
-  
 
   res.status(200).json({msg:"Signed in successfully"});
 

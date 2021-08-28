@@ -1,463 +1,275 @@
 <template>
-  <div>
-    <fileUpload />
-    <!-- <button  @click="showDialog(false)">Close</button> -->
-    <button v-on:click="moveWeekBack">Back 1 Week</button>
-    <!-- <span>{{this.d1.toDateString()}}</span> -->
-    <button v-on:click="moveWeekForward">Forward 1 Week</button>
-    <table style="width:100%">
-    <tr>
-      <th>Monday</th>
-      <th>Tuesday</th>
-      <th>Wednesday</th>
-      <th>Thursday</th>
-      <th>Friday</th>
-      <th>Saturday</th>
-      <th>Sunday</th>
-    </tr>
-    <tr id="array-rendering">
-      <td v-for="day in days" :key="day.date" >
-        {{day.date.getDate()}}
-        <div v-for="activity in day.activities" :key="activity.distance" >
-          <button  @click="fetchSingleRide(activity.id); singleRideViewToggle(true); " >{{activity.id}}<img src="/cycling.png"></button>
-          <span>Distance: {{activity.distance}}km</span>
-          <span>Normalised Power: {{activity.np}}w</span>
+<div>
+  <fileUpload />
+  <!-- <button  @click="showDialog(false)">Close</button> -->
+  <button v-on:click="moveWeekBack">Back 1 Week</button>
+  <!-- <span>{{this.d1.toDateString()}}</span> -->
+  <button v-on:click="moveWeekForward">Forward 1 Week</button>
 
-        </div>
-      </td>
-    </tr>
-  </table>
-  <singleRideView
-  v-show="singleRideVisible"
-    :singleRideViewToggle="singleRideVisible"
-    @singleRideViewEvent="singleRideViewToggle"
-    :selected-ride="selectedRide"
-    v-on:closeSingleView="singleRideViewToggle(false)">
-
-
-  </singleRideView>
-  <div>Icons made by <a href="https://www.freepik.com" title= 'Freepik'> Freepik</a> from <a href='https://www.flaticon.com/' title='Flaticon'>www.flaticon.com</a></div>
+  <div class="weekdays">
+    <div class="weekday">Monday</div>
+    <div class="weekday">Tuesday</div>
+    <div class="weekday">Wednesday</div>
+    <div class="weekday">Thursday</div>
+    <div class="weekday">Friday</div>
+    <div class="weekday">Saturday</div>
+    <div class="weekday">Sunday</div>
   </div>
+
+  <div class="calendar">
+    <div class="day" v-for="day in days" :key="day.date">
+      <div v-if="day.date.getDate()==1">
+        {{day.date.getDate()}} {{day.date.toLocaleString('default', { month: 'short' })}}
+      </div>
+      <div v-else>
+        {{day.date.getDate()}}
+      </div>
+
+      <div v-for="activity in day.activities" :key="activity.distance">
+        <button class="rideButton" @click="fetchSingleRide(activity.id); singleRideViewToggle(true); "></button>
+        <p>Dist: {{Math.round(activity.distance)}}km</p>
+        <p>NP: {{Math.round(activity.np)}}w</p>
+        <p>TSS: {{Math.round(activity.tss)}}</p>
+      </div>
+    </div>
+<transition name="flip">
+  <singleRideView v-if="singleRideVisible" :singleRideViewToggle="singleRideVisible" @singleRideViewEvent="singleRideViewToggle" :selected-ride="selectedRide" v-on:closeSingleView="singleRideViewToggle(false)">
+
+
+</singleRideView></transition>
+
+  </div>
+  <div>Icons made by <a href="https://www.freepik.com" title='Freepik'> Freepik</a> from <a href='https://www.flaticon.com/' title='Flaticon'>www.flaticon.com</a></div>
+</div>
 </template>
 
 <script>
 import singleRideView from './singleRide.vue'
 import fileUpload from './upload.vue'
 import axios from 'axios';
-export default{
+export default {
   name: "calendar",
-  components:{
+  components: {
     singleRideView,
     fileUpload
   },
   props: ['selectedRide'],
-  data(){
-    return{
-    days:[],
-    view: null,
-    singleRideVisible: false,
+  data() {
+    return {
+      days: [],
+      view: null,
+      singleRideVisible: false,
 
     }
-},
-
-methods: {
-  singleRideViewToggle(visible) {
+  },
+  methods: {
+    singleRideViewToggle(visible) {
       this.singleRideVisible = visible;
 
     },
-// Currently mutating the prop directly which is apparently an anti-pattern but works well enough for now
-    async fetchSingleRide(id){
-    console.log(id);
-    this.selectedRide = await axios.get('http://localhost:3000/showRide/'+id)
-        .catch(function (error) {console.log(error);})
-
-      },
-  async fetchRides(dateOne, dateTwo){
-    return axios.get('http://localhost:3000/showRides/'+dateOne+'.'+dateTwo)
-      .catch(function (error) {console.log(error);})
+    // Currently mutating the prop directly which is apparently an anti-pattern but works well enough for now
+    async fetchSingleRide(id) {
+      console.log(id);
+      this.selectedRide = await axios.get('http://localhost:3000/showRide/' + id)
+        .catch(function(error) {
+          console.log(error);
+        })
 
     },
-  setInitialView(){
-    this.view = new Date()
+    async fetchRides(dateOne, dateTwo) {
+      return axios.get('http://localhost:3000/showRides/' + dateOne + '.' + dateTwo)
+        .catch(function(error) {
+          console.log(error);
+        })
 
-  },
+    },
 
-  moveWeekBack(){
-    this.view.setDate(this.view.getDate()-7);
-    this.assignDatesAndRides();
-  },
+    setInitialView() {
+      this.view = new Date()
+    },
 
-  moveWeekForward(){
-    this.view.setDate(this.view.getDate()+7);
-    this.assignDatesAndRides();
-  },
+    moveWeekBack() {
+      this.view.setDate(this.view.getDate() - 7);
+      this.assignDatesAndRides();
+    },
 
-  async assignDatesAndRides(){
-    this.days = [];
-    if (this.view == null){
-      this.setInitialView();
-    }
-    var i;
-    var d;
-    var data;
-
-    switch (this.view.getDay()){
-
-      case 1:
-      for (i=0;i<7;i++){
-          // console.log(i);
-          let day = {
-            date: new Date (this.view),
-            activities:[]
-          }
-          day.date.setDate(this.view.getDate()+i)
-          this.days.push(day);
-          // console.log(this.days[0].date);
-        }
-        console.log(this.days)
-
-        data = await this.fetchRides(this.days[0].date.setHours(0, 0), this.days[6].date+1);
-        try {
-          if (data.data != null){
-            data.data.forEach((activity) =>{
-              var activityDate = new Date(activity.date)
-
-              switch (activityDate.getDay()){
-                case 1:
-                  this.days[0].activities.push(activity);
-                break
-                case 2:
-                  this.days[1].activities.push(activity);
-                break
-                case 3:
-                  this.days[2].activities.push(activity);
-                break
-                case 4:
-                  this.days[3].activities.push(activity);
-                break
-                case 5:
-                  this.days[4].activities.push(activity);
-                break
-                case 6:
-                  this.days[5].activities.push(activity);
-                break
-                case 0:
-                  this.days[6].activities.push(activity);
-                break
-              }
-            })
-          }
-        }
-          catch (err){
-            if(err){console.log(err)}
-          }
-
-        break
-
-      case 2:
-      for (i=0;i<7;i++){
-        // console.log(i);
-        let day = {
-          date: new Date (this.view),
-          activities:[]
-        }
-        day.date.setDate(this.view.getDate()+i-1)
-
-        this.days.push(day);
-
-        // console.log(this.days[0].date);
+    moveWeekForward() {
+      this.view.setDate(this.view.getDate() + 7);
+      this.assignDatesAndRides();
+    },
+    async assignDatesAndRides() {
+      this.days = [];
+      if (this.view == null) {
+        this.setInitialView();
       }
-      console.log(this.days)
+      var i;
+      var d;
 
-      data = await this.fetchRides(this.days[0].date.setHours(0, 0), this.days[6].date+1);
+      switch (this.view.getDay()) {
 
-        if (data.data != null){
-          data.data.forEach(activity =>{
-            var activityDate = new Date(activity.date)
+        case 1:
+          for (i = 0; i < 28; i++) {
+            // console.log(i);
+            let day = {
+              date: new Date(this.view),
+              activities: []
+            }
+            day.date.setDate(this.view.getDate() + i - 12)
+            this.days.push(day);
+          }
+          break
 
-            switch (activityDate.getDay()){
-              case 1:
-                this.days[0].activities.push(activity);
-              break
-              case 2:
-                this.days[1].activities.push(activity);
-              break
-              case 3:
-                this.days[2].activities.push(activity);
-              break
-              case 4:
-                this.days[3].activities.push(activity);
-              break
-              case 5:
-                this.days[4].activities.push(activity);
-              break
-              case 6:
-                this.days[5].activities.push(activity);
-              break
-              case 0:
-                this.days[6].activities.push(activity);
-              break
+        case 2:
+          for (i = 0; i < 28; i++) {
+            // console.log(i);
+            let day = {
+              date: new Date(this.view),
+              activities: []
+            }
+            day.date.setDate(this.view.getDate() + i - 12)
+
+            this.days.push(day);
+
+            // console.log(this.days[0].date);
+          }
+
+          break
+
+        case 3:
+          for (i = 0; i < 28; i++) {
+            // console.log(i);
+            let day = {
+              date: new Date(this.view),
+              activities: []
+            }
+            day.date.setDate(this.view.getDate() + i - 12)
+
+            this.days.push(day);
+
+            // console.log(this.days[0].date);
+          }
+          break
+
+        case 4:
+          for (i = 0; i < 18; i++) {
+            // console.log(i);
+            let day = {
+              date: new Date(this.view),
+              activities: []
+            }
+            day.date.setDate(this.view.getDate() + i - 12)
+
+            this.days.push(day);
+          }
+
+          break
+
+        case 5:
+          for (i = 0; i < 28; i++) {
+            // console.log(i);
+            let day = {
+              date: new Date(this.view),
+              activities: []
+            }
+            day.date.setDate(this.view.getDate() + i - 12)
+
+            this.days.push(day);
+            // console.log(this.days[0].date);
+          }
+          break
+
+        case 6:
+          for (i = 0; i < 28; i++) {
+            // console.log(i);
+            let day = {
+              date: new Date(this.view),
+              activities: []
+            }
+            day.date.setDate(this.view.getDate() + i - 12)
+
+            this.days.push(day);
+          }
+
+          break
+
+        case 0:
+          for (i = 0; i < 28; i++) {
+            // console.log(i);
+            d = new Date(this.view)
+            d.setDate(this.view.getDate() + i - 12)
+            this.days.push(Object.create(this.days));
+            this.days[i].date = new Date(d);
+            // console.log(this.days[0].date);
+          }
+          break
+
+        default:
+      }
+
+      try {
+        var data = await this.fetchRides(this.days[0].date.setHours(0, 0), this.days[27].date+1);
+        if (data.data != null) {
+          console.log(data)
+          data.data.forEach((activity) => {
+            console.log(activity)
+            for (i = 0; i < 28; i++) {
+              var activityDate = new Date(Date.parse(activity.date))
+              if (activityDate.getDate() == this.days[i].date.getDate()) {
+                this.days[i].activities.push(activity)
+              }
             }
           })
         }
-        break
-
-      case 3:
-      for (i=0;i<7;i++){
-        // console.log(i);
-        let day = {
-          date: new Date (this.view),
-          activities:[]
-        }
-        day.date.setDate(this.view.getDate()+i-2)
-
-        this.days.push(day);
-
-        // console.log(this.days[0].date);
+      } catch (e) {
+        console.log(e)
       }
-      console.log(this.days)
-
-      data = await this.fetchRides(this.days[0].date.setHours(0, 0), this.days[6].date+1);
-
-        if (data.data != null){
-          data.data.forEach(activity =>{
-            var activityDate = new Date(activity.date)
-
-            switch (activityDate.getDay()){
-              case 1:
-                this.days[0].activities.push(activity);
-              break
-              case 2:
-                this.days[1].activities.push(activity);
-              break
-              case 3:
-                this.days[2].activities.push(activity);
-              break
-              case 4:
-                this.days[3].activities.push(activity);
-              break
-              case 5:
-                this.days[4].activities.push(activity);
-              break
-              case 6:
-                this.days[5].activities.push(activity);
-              break
-              case 0:
-                this.days[6].activities.push(activity);
-              break
-            }
-          })
-        }
-
-        break
-
-      case 4:
-        for (i=0;i<7;i++){
-          // console.log(i);
-          let day = {
-            date: new Date (this.view),
-            activities:[]
-          }
-          day.date.setDate(this.view.getDate()+i-3)
-
-          this.days.push(day);
-        }
-        // dMax=new Date(date + 4*dayMs);
-
-        data = await this.fetchRides(this.days[0].date.setHours(0, 0), this.days[6].date+1);
-
-          if (data.data != null){
-            data.data.forEach(activity =>{
-
-              var activityDate = new Date(activity.date)
-              switch (activityDate.getDay()){
-                case 1:
-                  this.days[0].activities.push(activity);
-                break
-                case 2:
-                  this.days[1].activities.push(activity);
-                break
-                case 3:
-                  this.days[2].activities.push(activity);
-                break
-                case 4:
-                  this.days[3].activities.push(activity);
-                break
-                case 5:
-                  this.days[4].activities.push(activity);
-                break
-                case 6:
-                  this.days[5].activities.push(activity);
-                break
-                case 0:
-                  this.days[6].activities.push();
-                break
-              }
-            })
-          }
-          console.log(this.days[6].activities)
-        break
-
-      case 5:
-        for (i=0;i<7;i++){
-          // console.log(i);
-          let day = {
-            date: new Date (this.view),
-            activities:[]
-          }
-          day.date.setDate(this.view.getDate()+i-4)
-
-          this.days.push(day);
-          // console.log(this.days[0].date);
-        }
-
-        data = await this.fetchRides(this.days[0].date.setHours(0, 0), this.days[6].date+1);
-
-          if (data.data != null){
-            data.data.forEach(activity =>{
-              var activityDate = new Date(activity.date)
-
-              switch (activityDate.getDay()){
-                case 1:
-                  this.days[0].activities.push(activity);
-                break
-                case 2:
-                  this.days[1].activities.push(activity);
-                break
-                case 3:
-                  this.days[2].activities.push(activity);
-                break
-                case 4:
-                  this.days[3].activities.push(activity);
-                break
-                case 5:
-                  this.days[4].activities.push(activity);
-                break
-                case 6:
-                  this.days[5].activities.push(activity);
-                break
-                case 0:
-                  this.days[6].activities.push(activity);
-                break
-              }
-            })
-          }
-        break
-
-      case 6:
-        for (i=0;i<7;i++){
-          // console.log(i);
-          let day = {
-            date: new Date (this.view),
-            activities:[]
-          }
-          day.date.setDate(this.view.getDate()+i-5)
-
-          this.days.push(day);
-
-          // console.log(this.days[0].date);
-        }
-        console.log(this.days)
-
-        data = await this.fetchRides(this.days[0].date.setHours(0, 0), this.days[6].date+1);
-
-          if (data.data != null){
-            data.data.forEach(activity =>{
-              var activityDate = new Date(activity.date)
-
-              switch (activityDate.getDay()){
-                case 1:
-                  this.days[0].activities.push(activity);
-                break
-                case 2:
-                  this.days[1].activities.push(activity);
-                break
-                case 3:
-                  this.days[2].activities.push(activity);
-                break
-                case 4:
-                  this.days[3].activities.push(activity);
-                break
-                case 5:
-                  this.days[4].activities.push(activity);
-                break
-                case 6:
-                  this.days[5].activities.push(activity);
-                break
-                case 0:
-                  this.days[6].activities.push(activity);
-                break
-              }
-            })
-          }
-
-
-        console.log(this.days[0].activities);
-
-
-// calls to future dates can be cut out
-
-      break
-
-      case 0:
-        for (i=0;i<7;i++){
-          // console.log(i);
-          d = new Date (this.view)
-          d.setDate(this.view.getDate()+i-6)
-          this.days.push(Object.create(this.days));
-          this.days[i].date=new Date(d);
-          // console.log(this.days[0].date);
-        }
-        data = await this.fetchRides(this.days[0].date.setHours(0, 0), this.days[6].date+1);
-
-          if (data.data != null){
-            data.data.forEach(activity =>{
-              var activityDate = new Date(activity.date)
-
-              switch (activityDate.getDay()){
-                case 1:
-                  this.days[0].activities.push(activity);
-                break
-                case 2:
-                  this.days[1].activities.push(activity);
-                break
-                case 3:
-                  this.days[2].activities.push(activity);
-                break
-                case 4:
-                  this.days[3].activities.push(activity);
-                break
-                case 5:
-                  this.days[4].activities.push(activity);
-                break
-                case 6:
-                  this.days[5].activities.push(activity);
-                break
-                case 0:
-                  this.days[6].activities.push(activity);
-                break
-              }
-            })
-          }
-      break
-
-      default:
     }
-
   },
-  },
-mounted(){
-  this.assignDatesAndRides();
-},
+  mounted() {
+    this.assignDatesAndRides()
+  }
 }
 </script>
 
 <style>
-td{
-  width:150px;
-  padding: 15px;
+.calendar {
+  display: flex;
+  flex-wrap: wrap;
+
 }
-span{
+
+.day {
+  border: solid;
+  border-width: thin;
+  flex: 1 0 13%;
+
+  max-width: 13%;
+  padding: 20px 0;
+}
+
+.weekdays {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 50px 0 0 0;
+
+}
+
+.weekday {
+  border: solid;
+  border-width: thin;
+  flex: 1 0 13%;
+  max-width: 13%;
+
+}
+.rideButton{
+  background-color: #04AA6D;
+  border-radius:50%;
+  height:25px;
+  width:25px;
+}
+
+span {
   padding: 0px 10px;
 }
+
 </style>

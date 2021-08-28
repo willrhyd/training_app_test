@@ -110,5 +110,13 @@ function rideNormalisedPower(activity) {
   return normalized_power;
 }
 
+
+function getTss(ftp,np,duration){
+  // TSS = (sec x NP® x IF®)/(FTP x 3600) x 100
+  console.log(ftp, np, duration);
+  return ((duration*np*(np/ftp))/(ftp*3600))*100;
+}
+
+exports.getTss= getTss;
 exports.parseFIT=parseFIT;
 exports.getNP = getNP;

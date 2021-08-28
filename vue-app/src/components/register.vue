@@ -4,27 +4,27 @@
 
     <div class= 'form-group'>
       <label>First Name</label>
-      <input type='text' class='form-control' v-model='firstName' placeholder='First Name' />
+      <input type='text' class='form-control' v-model='form.firstName' placeholder='First Name' />
     </div>
     <div class= 'form-group'>
       <label>Last Name</label>
-      <input type='text' class='form-control' v-model='lastName' placeholder='Last Name' />
+      <input type='text' class='form-control' v-model='form.lastName' placeholder='Last Name' />
     </div>
     <div class= 'form-group'>
       <label>User Name</label>
-      <input type='text' class='form-control' v-model='username' placeholder='Username' />
+      <input type='text' class='form-control' v-model='form.username' placeholder='Username' />
     </div>
     <div class= 'form-group'>
       <label>Email</label>
-      <input type='text' class='form-control' v-model='email' placeholder='Email' />
+      <input type='text' class='form-control' v-model='form.email' placeholder='Email' />
     </div>
     <div class= 'form-group'>
       <label>Password</label>
-      <input type='password' class='form-control' v-model='password' placeholder='Password' />
+      <input type='password' class='form-control' v-model='form.password' placeholder='Password' />
     </div>
     <div class= 'form-group'>
       <label>Password</label>
-      <input type='password' class='form-control' v-model='passwordConfirm' placeholder='Confirm Password' />
+      <input type='password' class='form-control' v-model='form.passwordConfirm' placeholder='Confirm Password' />
     </div>
     <button type='submit'>Submit</button>
   </form>
