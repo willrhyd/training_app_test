@@ -155,6 +155,7 @@ app.get('/showRide/:id', async function(req, res) {
 app.post('/fileUpload', ensureAuthenticated, upload.any('multi-files'), fit.parseFIT, uploadDB, function(req, res) {
 
   console.log('Ride saved to DB');
+  res.sendStatus(200);
   //  uploadDB,
 });
 

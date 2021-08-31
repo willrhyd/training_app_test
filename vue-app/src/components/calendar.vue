@@ -1,10 +1,12 @@
 <template>
 <div>
-  <fileUpload />
+  <fileUpload  @submittingRides='ridesSubmitting(true)' v-on:ridesSubmitted='ridesSubmitting(false)'/>
   <!-- <button  @click="showDialog(false)">Close</button> -->
   <button v-on:click="moveWeekBack">Back 1 Week</button>
   <!-- <span>{{this.d1.toDateString()}}</span> -->
   <button v-on:click="moveWeekForward">Forward 1 Week</button>
+
+  <div class="submitting" v-if='submittingRides' @submittingRides='ridesSubmitting(true)' >Submitting</div>
 
   <div class="weekdays">
     <div class="weekday">Monday</div>
@@ -34,8 +36,6 @@
     </div>
 <transition name="flip">
   <singleRideView v-if="singleRideVisible" :singleRideViewToggle="singleRideVisible" @singleRideViewEvent="singleRideViewToggle" :selected-ride="selectedRide" v-on:closeSingleView="singleRideViewToggle(false)">
-
-
 </singleRideView></transition>
 
   </div>
@@ -59,10 +59,16 @@ export default {
       days: [],
       view: null,
       singleRideVisible: false,
+      submittingRides: false,
 
     }
   },
   methods: {
+    ridesSubmitting(submitting){
+      console.log('Submitting event triggered: ' + submitting)
+      this.submittingRides = submitting;
+    },
+
     singleRideViewToggle(visible) {
       this.singleRideVisible = visible;
 
@@ -268,7 +274,17 @@ export default {
   height:25px;
   width:25px;
 }
+.submitting{
+  border-color: black;
+  border-width: thin;
+  border-style: solid;
+  background: white;
+  padding:2.5%;
+  position: absolute;
 
+  right: 40%;
+  top: 40%;
+}
 span {
   padding: 0px 10px;
 }

@@ -1,6 +1,6 @@
 <template>
 <div class="file">
-  <form @submit.prevent="onSubmit" enctype="multipart/form-data">
+  <form @submit.prevent="onSubmit" ref="uploadForm" enctype="multipart/form-data">
     <div class="fields">
       <label>Upload File</label><br />
       <input type="file" multiple="multiple" ref="file" @change="onSelect" />
@@ -23,8 +23,8 @@ export default {
   data() {
     return {
       file: "",
-      message: ""
-    }
+      message: "",
+      }
   },
   methods: {
     onSelect() {
@@ -37,18 +37,30 @@ export default {
       // }
     },
     async onSubmit() {
+      if(this.$refs.file.files.length!=0){this.$emit('submittingRides');}
       let formData = new FormData();
       for (var i = 0; i < this.$refs.file.files.length; i++) {
         let file = this.$refs.file.files[i];
         formData.append('files[' + i + ']', file);
       }
-      axios.post('/fileUpload', formData, {
+      try{
+      let submit = await axios.post('/fileUpload', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           },
-        }).then(function() {})
-        .catch(function() {});
-    },
+        });
+
+        if(submit.status == 200){
+          this.$emit('ridesSubmitted')
+
+          this.$refs.uploadForm.reset();
+          // Add action here to reset the calendar follwoing submit
+        }
+      }
+        catch (err) {
+          console.log(err);
+        }
+      },
   }
 }
 </script>
