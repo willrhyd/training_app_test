@@ -35,7 +35,12 @@ req.parsedFiles =[];
           // console.log(req.parsedFiles[0]);
         });
       });
-      // console.log(parsedArray);
+      fs.unlink(`./temp/${file}`, (err) =>{
+        if (err) {
+          console.error(err)
+          return
+        }
+      });
     }    // console.log(req.parsedFiles[0]);
     // console.log(parsedArray);
   });
