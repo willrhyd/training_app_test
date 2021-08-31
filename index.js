@@ -19,6 +19,7 @@ const shortid = require('shortid')
 const fit = require('./fit');
 require('dotenv').config();
 const port = 3000
+
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
     cb(null, './temp');
@@ -30,6 +31,7 @@ const storage = multer.diskStorage({
     console.log("File uploaded successfully")
   }
 });
+
 const upload = multer({
   storage: storage
 });
@@ -78,23 +80,24 @@ const Ride = connection.Ride;
 const User = connection.User;
 
 function uploadDB(req, res, next) {
-  const nPwr = fit.getNP(req.parsedFile)
-  const duration = req.parsedFile.sessions[0].total_timer_time;
-
-
-  console.log(req.user.ftp)
-  const dbRide = new Ride({
-    data: JSON.stringify(req.parsedFile.sessions[0]),
-    date: req.parsedFile.sessions[0].timestamp,
-    distance: req.parsedFile.sessions[0].total_distance,
-    duration: duration,
-    nPwr: nPwr,
-    tss: fit.getTss(req.user.ftp, nPwr, duration),
-    user: req.user.username
+  req.parsedFiles.forEach(file => {
+    const nPwr = fit.getNP(file)
+    const duration = file.sessions[0].total_timer_time;
+    // console.log(req.user.ftp)
+    const dbRide = new Ride({
+      data: JSON.stringify(file.sessions[0]),
+      date: file.sessions[0].timestamp,
+      distance: file.sessions[0].total_distance,
+      duration: duration,
+      nPwr: nPwr,
+      tss: fit.getTss(req.user.ftp, nPwr, duration),
+      user: req.user.username
+    });
+    dbRide.save(function(err) {
+      if (err) console.log(err);
+    });
   });
-  dbRide.save(function(err) {
-    if (err) console.log(err);
-  });
+
   next();
 }
 //
@@ -149,8 +152,10 @@ app.get('/showRide/:id', async function(req, res) {
   res.send(res.locals.rideObj);
 });
 
-app.post('/file_upload', ensureAuthenticated, upload.any('file'), fit.parseFIT, uploadDB, function(req, res) {
+app.post('/fileUpload', ensureAuthenticated, upload.any('multi-files'), fit.parseFIT, uploadDB, function(req, res) {
+
   console.log('Ride saved to DB');
+  //  uploadDB,
 });
 
 app.post('/register', function(req, res) {

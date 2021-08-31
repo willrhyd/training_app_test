@@ -103,7 +103,6 @@ export default {
         this.setInitialView();
       }
       var i;
-      var d;
 
       switch (this.view.getDay()) {
 
@@ -114,7 +113,7 @@ export default {
               date: new Date(this.view),
               activities: []
             }
-            day.date.setDate(this.view.getDate() + i - 12)
+            day.date.setDate(this.view.getDate() + i - 14)
             this.days.push(day);
           }
           break
@@ -126,7 +125,7 @@ export default {
               date: new Date(this.view),
               activities: []
             }
-            day.date.setDate(this.view.getDate() + i - 12)
+            day.date.setDate(this.view.getDate() + i - 15)
 
             this.days.push(day);
 
@@ -142,7 +141,7 @@ export default {
               date: new Date(this.view),
               activities: []
             }
-            day.date.setDate(this.view.getDate() + i - 12)
+            day.date.setDate(this.view.getDate() + i - 16)
 
             this.days.push(day);
 
@@ -157,7 +156,7 @@ export default {
               date: new Date(this.view),
               activities: []
             }
-            day.date.setDate(this.view.getDate() + i - 12)
+            day.date.setDate(this.view.getDate() + i - 17)
 
             this.days.push(day);
           }
@@ -171,7 +170,7 @@ export default {
               date: new Date(this.view),
               activities: []
             }
-            day.date.setDate(this.view.getDate() + i - 12)
+            day.date.setDate(this.view.getDate() + i - 18)
 
             this.days.push(day);
             // console.log(this.days[0].date);
@@ -185,7 +184,7 @@ export default {
               date: new Date(this.view),
               activities: []
             }
-            day.date.setDate(this.view.getDate() + i - 12)
+            day.date.setDate(this.view.getDate() + i - 19)
 
             this.days.push(day);
           }
@@ -193,14 +192,16 @@ export default {
           break
 
         case 0:
-          for (i = 0; i < 28; i++) {
-            // console.log(i);
-            d = new Date(this.view)
-            d.setDate(this.view.getDate() + i - 12)
-            this.days.push(Object.create(this.days));
-            this.days[i].date = new Date(d);
-            // console.log(this.days[0].date);
+        for (i = 0; i < 28; i++) {
+          // console.log(i);
+          let day = {
+            date: new Date(this.view),
+            activities: []
           }
+          day.date.setDate(this.view.getDate() + i - 20)
+
+          this.days.push(day);
+        }
           break
 
         default:

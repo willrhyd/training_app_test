@@ -1,35 +1,49 @@
-
-
 const EasyFit = require('./node_modules/easy-fit/dist/easy-fit.js').default;
 const fs = require('fs');
 
-function parseFIT (req, res, next) {
-   fs.readFile("temp/file.fit", function(err, content) {
-    // Create a EasyFit instance (options argument is optional)
-    var easyFit = new EasyFit({
-      force: true,
-      speedUnit: 'km/h',
-      lengthUnit: 'km',
-      temperatureUnit: 'kelvin',
-      elapsedRecordField: true,
-      mode: 'cascade',
-    });
+function parseFIT(req, res, next) {
+req.parsedFiles =[];
+  fs.readdir("./temp", (err, files) => {
 
-    // Parse your file
-   easyFit.parse(content, function(error, data) {
-      // Handle result of parse method
-      if (error) {
-        console.log(error);
-      } else {
-        req.parsedFile = data.activity;
-        }
-    });
-    next();
+    for(var i = 0; i < files.length; i++) {
+      var file = files[i]
+
+      fs.readFile(`./temp/${file}`, function(err, content) {
+        // Create a EasyFit instance (options argument is optional)
+        var easyFit = new EasyFit({
+          force: true,
+          speedUnit: 'km/h',
+          lengthUnit: 'km',
+          temperatureUnit: 'kelvin',
+          elapsedRecordField: true,
+          mode: 'cascade',
+        });
+
+        // Parse your file
+        easyFit.parse(content, function(error, data) {
+          // Handle result of parse method
+          if (error) {
+            console.log(error);
+          } else {
+// Difficulties building the array because callbacks only returning once the for loop has completed,
+// maybe a promise would work better?
+            req.parsedFiles.push(data.activity)
+            if(req.parsedFiles.length == files.length){
+              next();
+            }
+          }
+          // console.log(req.parsedFiles[0]);
+        });
+      });
+      // console.log(parsedArray);
+    }    // console.log(req.parsedFiles[0]);
+    // console.log(parsedArray);
   });
-
+// console.log(req.parsedFiles);
+// next();
 }
 
-function getNP(activity){
+function getNP(activity) {
   remove_stops(activity);
   var np = rideNormalisedPower(activity);
   return np;
@@ -111,12 +125,12 @@ function rideNormalisedPower(activity) {
 }
 
 
-function getTss(ftp,np,duration){
+function getTss(ftp, np, duration) {
   // TSS = (sec x NP® x IF®)/(FTP x 3600) x 100
   console.log(ftp, np, duration);
-  return ((duration*np*(np/ftp))/(ftp*3600))*100;
+  return ((duration * np * (np / ftp)) / (ftp * 3600)) * 100;
 }
 
-exports.getTss= getTss;
-exports.parseFIT=parseFIT;
+exports.getTss = getTss;
+exports.parseFIT = parseFIT;
 exports.getNP = getNP;
