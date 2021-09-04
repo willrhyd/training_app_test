@@ -53,9 +53,14 @@ export default{
     ...mapActions(["Register"]),
       async submit(){
         try {
-          await this.Register(this.form);
-          this.$router.push("/calendar");
-          this.showError = false
+          let resp = await this.Register(this.form);
+          console.log(resp)
+          if(resp==200){
+            this.$router.push("/calendar");
+            this.showError = false
+        } else{
+          throw new Error
+        }
       } catch (error) {
           this.showError = true
       }

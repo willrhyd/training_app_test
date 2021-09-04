@@ -3,12 +3,12 @@ const fs = require('fs');
 
 function parseFIT(req, res, next) {
 req.parsedFiles =[];
-  fs.readdir("./temp", (err, files) => {
+  fs.readdir(`./temp/${req.user.username}`, (err, files) => {
 
     for(var i = 0; i < files.length; i++) {
       var file = files[i]
-
-      fs.readFile(`./temp/${file}`, function(err, content) {
+      console.log(`./temp/${req.user.username}/${file}`)
+      fs.readFile(`./temp/${req.user.username}/${file}`, function(err, content) {
         // Create a EasyFit instance (options argument is optional)
         var easyFit = new EasyFit({
           force: true,
@@ -35,7 +35,7 @@ req.parsedFiles =[];
           // console.log(req.parsedFiles[0]);
         });
       });
-      fs.unlink(`./temp/${file}`, (err) =>{
+      fs.unlink(`./temp/${req.user.username}/${file}`, (err) =>{
         if (err) {
           console.error(err)
           return
@@ -136,6 +136,75 @@ function getTss(ftp, np, duration) {
   return ((duration * np * (np / ftp)) / (ftp * 3600)) * 100;
 }
 
+function checkForRide(rides, checkDate) {
+  var match;
+  var tss;
+  for (var j = 0; j < rides.length; j++) {
+    rideDate = new Date(Date.parse(rides[j].date));
+    rideDate.setHours(0, 0, 0);
+
+    console.log("Ride Date: " + rideDate)
+    console.log("Check Date: " + checkDate)
+    console.log("Ride TSS: " + rides[j].tss)
+
+    if (rideDate.toDateString() == checkDate.toDateString()) {
+      // console.log('Dates match')
+      match = 1;
+      tss = rides[j].tss
+      break;
+    } else {
+      match = 0;
+    }
+  }
+  return {
+    match: match,
+    tss: tss
+  }
+}
+
+function buildPmcArray(rides) {
+  var chartStart = new Date(Date.parse(rides[0].date));
+  var chartEnd = new Date();
+  // var numberOfDays = Math.round((chartEnd-chart)/(1000*60*60*24))
+
+  var dates = []
+  var data = []
+  var ctlToday = 0;
+  var ctlYesterday = 0;
+  var rideCheck;
+
+  for (var d = new Date(chartStart); d <= new Date(); d.setDate(d.getDate() + 1)) {
+    d.setHours(0, 0, 0);
+    // For each day, check whether there's a ride that matches that day
+    rideCheck = checkForRide(rides, d)
+
+    // Build the data array with date and ctl value. The date is really weird as it
+    // reads a day behind in the raw array but if you set a new date with that value
+    // it reads correctly.
+    if (rideCheck.match == 1) {
+      ctlToday = ctlYesterday + ((rideCheck.tss - ctlYesterday) / (42))
+      data.push({
+        date: new Date(d),
+        ctl: ctlToday
+      })
+      rideMatch = 1
+      ctlYesterday = ctlToday
+    }
+
+    if (rideCheck.match == 0) {
+      ctlToday = ctlYesterday + ((0 - ctlYesterday) / (42))
+      data.push({
+        date: new Date(d),
+        ctl: ctlToday
+      })
+      ctlYesterday = ctlToday;
+    }
+
+  }
+  return data;
+}
+
+exports.pmc = buildPmcArray;
 exports.getTss = getTss;
 exports.parseFIT = parseFIT;
 exports.getNP = getNP;

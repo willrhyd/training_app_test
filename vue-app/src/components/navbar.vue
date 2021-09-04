@@ -1,11 +1,11 @@
 <template>
   <div class="nav">
     <ul>
-      <li v-if='isLoggedIn'><a href="/user" target="_blank" rel="noopener">{{user}}</a></li>
-      <li v-if='isLoggedIn'><a href="/calendar" target="_blank" rel="noopener">Calendar</a></li>
-      <li v-if='isLoggedIn'><a href="/dashboard" target="_blank" rel="noopener">Dashboard</a></li>
-      <li v-if='isLoggedIn==false'><a href="/register" target="_blank" rel="noopener">Sign Up</a></li>
-      <li v-if='isLoggedIn'><a v-on:click="logout" href="/" target="_blank" rel="noopener">Logout</a></li>
+      <li v-if='isLoggedIn'><a href="/user"  rel="noopener">{{user}}</a></li>
+      <li v-if='isLoggedIn'><a href="/calendar" rel="noopener">Calendar</a></li>
+      <li v-if='isLoggedIn'><a href="/dashboard"  rel="noopener">Dashboard</a></li>
+      <li v-if='isLoggedIn==false'><a href="/register"  rel="noopener">Sign Up</a></li>
+      <li v-if='isLoggedIn'><a v-on:click="logout" href="/"  rel="noopener">Logout</a></li>
     </ul>
   </div>
 </template>

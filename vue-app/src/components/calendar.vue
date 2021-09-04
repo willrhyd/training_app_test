@@ -60,7 +60,6 @@ export default {
       view: null,
       singleRideVisible: false,
       submittingRides: false,
-
     }
   },
   methods: {
@@ -156,7 +155,7 @@ export default {
           break
 
         case 4:
-          for (i = 0; i < 18; i++) {
+          for (i = 0; i < 28; i++) {
             // console.log(i);
             let day = {
               date: new Date(this.view),

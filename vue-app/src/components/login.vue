@@ -39,10 +39,12 @@ export default{
       }
       try{
         const login = await this.LogIn(User);
-        if(login.status==200){
+        if(login==200){
         this.$router.push('/calendar');
         this.showError = false
-        }
+      } else {
+        throw new Error("Login failed")
+      }
       } catch (err){
         console.log(err)
         this.showError = true

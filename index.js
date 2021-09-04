@@ -17,12 +17,18 @@ const multer = require('multer');
 const path = require('path')
 const shortid = require('shortid')
 const fit = require('./fit');
+const fs = require('fs')
 require('dotenv').config();
 const port = 3000
 
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
-    cb(null, './temp');
+    const user = req.user.username
+    const path = `./temp/${user}`
+    fs.mkdirSync(path, {
+      recursive: true
+    })
+    return cb(null, path)
   },
   // By default, multer removes file extensions so let's add them back
   filename: function(req, file, cb) {
@@ -39,11 +45,11 @@ const upload = multer({
 app.use(cookieParser())
 app.use(cors({
   origin: [
-              'http://localhost:8080',
-              'https://localhost:8080'
-            ],
-            credentials: true,
-            exposedHeaders: ['set-cookie']
+    'http://localhost:8080',
+    'https://localhost:8080'
+  ],
+  credentials: true,
+  exposedHeaders: ['set-cookie']
 
 }));
 
@@ -52,6 +58,7 @@ app.use(express.urlencoded({ // to support URL-encoded bodies
   extended: true
 }));
 app.use(session({
+  name: "trainingApp",
   secret: process.env.SECRET,
   resave: false,
   saveUninitialized: true,
@@ -60,7 +67,8 @@ app.use(session({
     collectionName: 'sessions' // See below for details
   }),
   cookie: {
-    maxAge: 100*60*60*24,
+
+    maxAge: 100 * 60 * 60 * 24,
     httpOnly: false
   },
   unset: 'destroy'
@@ -70,8 +78,12 @@ app.use(passport.session());
 
 function ensureAuthenticated(req, res, next) {
   console.log(`Is logged in: ${req.isAuthenticated()}`);
-  if (req.isAuthenticated()) { return next(); }
-  res.status(401).json({msg:"Not logged in"})
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({
+    msg: "Not logged in"
+  })
 }
 
 //Connect to database and set the Ride model from databse.js
@@ -113,7 +125,8 @@ app.get('/showRides/:dateOne.:dateTwo', ensureAuthenticated, async (req, res, ne
     date: {
       $gt: req.params.dateOne,
       $lt: req.params.dateTwo
-    }, user: req.user.username
+    },
+    user: req.user.username
   }, function(err, docs) {
     if (err) {
       console.log(err)
@@ -160,10 +173,12 @@ app.post('/fileUpload', ensureAuthenticated, upload.any('multi-files'), fit.pars
 });
 
 app.post('/register', function(req, res) {
-  console.log(req.body)
+
   // This could do with going into middleware
-  if (req.body.password!==req.body.passwordConfirm) {
-    return res.status(500).json({msg:"Passwords do not match"})
+  if (req.body.password !== req.body.passwordConfirm) {
+    return res.status(500).json({
+      msg: "Passwords do not match"
+    })
   }
   const hashSalt = password.genPassword(req.body.password);
   const regUser = new User({
@@ -174,30 +189,52 @@ app.post('/register', function(req, res) {
     salt: hashSalt.salt,
   });
   regUser.save()
-    .then((user) =>{
-      console.log(user);
-  })
-  .catch((err)=>{
-    console.log(err)
-  });
-  res.status(200).json({msg:"Sign up successful"});
-
+    .then((user) => {
+      console.log("User registered")
+      res.status(200).json({
+        msg: "Sign up successful"
+      });
+    })
+    .catch((err) => {
+      console.log(err)
+    });
+  res.sendStatus;
 });
 
 app.post('/login', passport.authenticate('local'), function(req, res) {
 
-  res.status(200).json({msg:"Signed in successfully"});
+  res.status(200).json({
+    msg: "Signed in successfully"
+  });
 
 });
 
-app.get('/logout', function(req, res){
+app.get('/logout', function(req, res) {
   req.logout();
-  res.status(200).json({msg:"Signed out successfully"});
+  res.status(200).json({
+    msg: "Signed out successfully"
+  });
 });
 
 app.delete('/file_delete/:id', function(req, res) {
   // Build delete route here
 });
+
+app.get('/pmc/:user', ensureAuthenticated, async function(req, res) {
+  console.log("PMC called")
+  try {
+    var rides = await Ride.find({
+      user: req.user.username
+    });
+    // Assign tss average to each date CTLtoday = CTLyesterday + (TSStoday - CTLyesterday)(1/CTL time constant)
+    var data = fit.pmc(rides, )
+
+    res.send(data)
+
+  } catch (err) {
+    console.log(err);
+  }
+})
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)

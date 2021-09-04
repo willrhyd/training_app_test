@@ -1,23 +1,26 @@
+<!-- API call for chart data is now working but need to figure out chart rendering -->
+
 <template>
-  <pmc></pmc>
-
-
-
-
+  <div>
+    <pmc></pmc>
+  </div>
 </template>
 
-
 <script>
-import pmc from './pmc.vue';
+// import axios from 'axios'
+// import pmc from './pmc'
+import pmc from './pmc.vue'
 
-export default{
-  components:{
-    pmc,
+  export default{
+    name: 'dashboard',
+    components:{
+      pmc
+    },
   }
-}
 </script>
 
 <style>
+
 
 
 </style>
