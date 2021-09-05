@@ -63,7 +63,7 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   store: MongoStore.create({
-    mongoUrl: "mongodb://localhost:27017/trainingApp",
+    mongoUrl: "mongodb://Administrator:GKR3NBzGCcJYCFwW@cluster0-shard-00-00.m89cn.mongodb.net:27017,cluster0-shard-00-01.m89cn.mongodb.net:27017,cluster0-shard-00-02.m89cn.mongodb.net:27017/rides?ssl=true&replicaSet=atlas-iug182-shard-0&authSource=admin&retryWrites=true&w=majority",
     collectionName: 'sessions' // See below for details
   }),
   cookie: {

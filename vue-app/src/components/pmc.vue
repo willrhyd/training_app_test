@@ -52,7 +52,7 @@ export default {
       var labels = [];
       var ctl = [];
       try{
-        var pmc = await axios.get('http://localhost:3000/pmc/' + this.user)
+        var pmc = await axios.get('/pmc/' + this.user)
         pmc.data.forEach(point=>{
           d = new Date(point.date)
           console.log(d.toLocaleDateString('en-GB'))
