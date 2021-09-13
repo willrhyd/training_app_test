@@ -227,7 +227,6 @@ app.get('/pmc/:user', ensureAuthenticated, async function(req, res) {
       user: req.user.username
     }).sort({ date: 'asc'}).exec(
       var data = fit.pmc(rides)
-
       res.send(data)
     );
     // Assign tss average to each date CTLtoday = CTLyesterday + (TSStoday - CTLyesterday)(1/CTL time constant)
