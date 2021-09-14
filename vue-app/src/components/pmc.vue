@@ -1,5 +1,12 @@
 <template>
 <div>
+  <form @submit.prevent='submit'>
+    <label>Trailing Days</label>
+    <input type='text' class='form-control' v-model='trailingDays' placeholder='Number of trailing days' />
+    <label>Forecast Days</label>
+    <input type='text' class='form-control' v-model='forecastDays' placeholder='Number of forecast days' />
+    <button>Update</button>
+  </form>
   <canvas id="pmc"></canvas>
 </div>
 </template>
@@ -11,6 +18,8 @@ export default {
   name: 'pmc',
   data(){
     return {
+      trailingDays: 90,
+      forecastDays: 15,
       pmcData: {
         type: "line",
         data: {
@@ -47,10 +56,11 @@ export default {
   },
   methods:{
     async fetchPmc(){
-
       var d;
       var labels = [];
       var ctl = [];
+
+      // Work on PMC so you can look at a date range and even forecast
       try{
         var pmc = await axios.get('/pmc/' + this.user)
         pmc.data.forEach(point=>{
@@ -62,6 +72,21 @@ export default {
       } catch(err) {
         console.log(err)
       }
+
+      // try{
+      //   var pmc = await axios.get('/pmc/' + this.user)
+      //   for (var i = this.trailingDays; i >=1; i--){
+      //     d = d.setDate(d.getDate()-i)
+      //     console.log(d.toLocaleDateString('en-GB'))
+      //     labels.push(d.toLocaleDateString('en-GB'));
+      //     pmc.data.forEach(point =>{
+      //       if (d.getDate)ctl.push(point.ctl);
+      //     })
+      //
+      //   })
+      // } catch(err) {
+      //   console.log(err)
+      // }
       this.pmcData.data.labels = labels;
       this.pmcData.data.datasets[0].data = ctl;
     }

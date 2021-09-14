@@ -78,10 +78,10 @@ app.use(session({
   }),
   cookie: {
     name: 'trainingApp',
-    secure: true,
+    // secure: true, - Not needed for test environment
     maxAge: 100 * 60 * 60 * 24,
-    sameSite: 'none',
-    domain: 'trainingappserver.uk',
+    // sameSite: 'none', - Not needed for test environment
+    // domain: 'trainingappserver.uk', - Not needed for test environment
     httpOnly: false
   },
   unset: 'destroy',
@@ -236,7 +236,7 @@ app.delete('/file_delete/:id', function(req, res) {
 });
 
 app.get('/pmc/:user', ensureAuthenticated, async function(req, res) {
-  console.log("PMC called")
+  console.log("PMC called");
   try {
     var rides = await Ride.find({
       user: req.user.username
