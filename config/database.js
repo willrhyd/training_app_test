@@ -1,3 +1,5 @@
+// jshint esversion: 6
+
 const mongoose = require('mongoose');
 
 require('dotenv').config();
@@ -15,7 +17,7 @@ const UserSchema = new Schema({
   username: String,
   hash: String,
   salt: String,
-})
+});
 
 const RideSchema = new Schema({
   data: String,
@@ -24,7 +26,7 @@ const RideSchema = new Schema({
   nPwr: Number,
   tss: Number,
   user: String,
-})
+});
 
 const Ride = mongoose.model("Ride", RideSchema);
 const User = mongoose.model("User", UserSchema);

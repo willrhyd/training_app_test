@@ -1,40 +1,40 @@
-// esversion: 6
+// jshint esversion: 6
 
 const express = require("express");
 const app = express();
 const mongoose = require('mongoose');
-const connection = require('./config/database')
-const passport = require('passport')
+const connection = require('./config/database');
+const passport = require('passport');
 const password = require('./lib/passwordUtils');
-require('./config/passport')
+require('./config/passport');
 const session = require('express-session');
 const crypto = require('crypto');
 const MongoStore = require('connect-mongo');
 const cors = require('cors');
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 const formidable = require('formidable');
 const multer = require('multer');
-const path = require('path')
-const shortid = require('shortid')
+const path = require('path');
+const shortid = require('shortid');
 const fit = require('./fit');
-const fs = require('fs')
+const fs = require('fs');
 require('dotenv').config();
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 3000;
 
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
-    const user = req.user.username
-    const path = `./temp/${user}`
+    const user = req.user.username;
+    const path = `./temp/${user}`;
     fs.mkdirSync(path, {
       recursive: true
-    })
-    return cb(null, path)
+    });
+    return cb(null, path);
   },
   // By default, multer removes file extensions so let's add them back
   filename: function(req, file, cb) {
     cb(null, file.fieldname + path.parse(file.originalname).ext);
 
-    console.log("File uploaded successfully")
+    console.log("File uploaded successfully");
   }
 });
 
@@ -46,7 +46,7 @@ app.use((req, res, next) => {
   console.log(req.hostname);
   next();
 });
-app.use(cookieParser())
+app.use(cookieParser());
 app.use(cors({
   origin: [
     'https://willrhyd.github.io/trainingapp-prod/#/',
