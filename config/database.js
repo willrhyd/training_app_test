@@ -14,6 +14,7 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
   name: String,
   ftp: {type:Number, default:300},
+  weight: {type:Number, default:70},
   username: String,
   hash: String,
   salt: String,
@@ -23,6 +24,7 @@ const RideSchema = new Schema({
   data: String,
   date: Date,
   distance: Number,
+  duration: Number,
   nPwr: Number,
   tss: Number,
   user: String,

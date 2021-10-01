@@ -2,6 +2,7 @@
 
 <template>
   <div>
+    <navbar/>
     <pmc></pmc>
   </div>
 </template>
@@ -10,11 +11,13 @@
 // import axios from 'axios'
 // import pmc from './pmc'
 import pmc from './pmc.vue'
+import navbar from './navbar.vue'
 
   export default{
     name: 'dashboard',
     components:{
-      pmc
+      pmc,
+      navbar
     },
   }
 </script>

@@ -1,3 +1,5 @@
+// jshint esversion:8
+
 const EasyFit = require('./node_modules/easy-fit/dist/easy-fit.js').default;
 const fs = require('fs');
 
@@ -6,8 +8,8 @@ req.parsedFiles =[];
   fs.readdir(`./temp/${req.user.username}`, (err, files) => {
 
     for(var i = 0; i < files.length; i++) {
-      var file = files[i]
-      console.log(`./temp/${req.user.username}/${file}`)
+      var file = files[i];
+      console.log(`./temp/${req.user.username}/${file}`);
       fs.readFile(`./temp/${req.user.username}/${file}`, function(err, content) {
         // Create a EasyFit instance (options argument is optional)
         var easyFit = new EasyFit({
@@ -143,12 +145,12 @@ function checkForRide(rides, checkDate) {
     rideDate = new Date(Date.parse(rides[j].date));
     rideDate.setHours(0, 0, 0);
 
-    console.log("Ride Date: " + rideDate)
-    console.log("Check Date: " + checkDate)
-    console.log("Ride TSS: " + rides[j].tss)
+    // console.log("Ride Date: " + rideDate);
+    // console.log("Check Date: " + checkDate);
+    // console.log("Ride TSS: " + rides[j].tss);
 
     if (rideDate.toDateString() == checkDate.toDateString()) {
-      // console.log('Dates match')
+
       match = 1;
       tss = rides[j].tss
       break;
@@ -161,42 +163,63 @@ function checkForRide(rides, checkDate) {
     tss: tss
   }
 }
+// function buildPmcArray(rides) {
+//
+//   return buildCtl(rides)
+// }
 
+
+
+// Doesn't handle multiple rides on one day yet
 function buildPmcArray(rides) {
+
+  // If function to cover edge case of no rides saved
+  if (rides == 0){
+    let data = [];
+    for (let i = 150; i>0; i--){
+      let d = new Date();
+      d.setDate(d.getDate()- i);
+      data.push({
+        date: d.toLocaleDateString("en-gb", dateOptions),
+        ctl: 0
+      });
+    }
+    return data;
+  }
+
+  // Normal execution if at least one ride saved
   var chartStart = new Date(Date.parse(rides[0].date));
   var chartEnd = new Date();
-  // var numberOfDays = Math.round((chartEnd-chart)/(1000*60*60*24))
 
-  var dates = []
-  var data = []
+  var dates = [];
+  var data = [];
   var ctlToday = 0;
   var ctlYesterday = 0;
   var rideCheck;
-
+  var dateOptions = {year: "numeric", month: "short", day: "numeric"};
   for (var d = new Date(chartStart); d <= new Date(); d.setDate(d.getDate() + 1)) {
     d.setHours(0, 0, 0);
-    // For each day, check whether there's a ride that matches that day
-    rideCheck = checkForRide(rides, d)
 
-    // Build the data array with date and ctl value. The date is really weird as it
-    // reads a day behind in the raw array but if you set a new date with that value
-    // it reads correctly.
+    // For each day, check whether there's a ride that matches that day
+    rideCheck = checkForRide(rides, d);
+
+    // Build the data array with date and ctl value.
     if (rideCheck.match == 1) {
-      ctlToday = ctlYesterday + ((rideCheck.tss - ctlYesterday) / (42))
+      ctlToday = ctlYesterday + ((rideCheck.tss - ctlYesterday) / (42));
       data.push({
-        date: new Date(d),
+        date: d.toLocaleDateString("en-gb", dateOptions),
         ctl: ctlToday
-      })
-      rideMatch = 1
-      ctlYesterday = ctlToday
+      });
+      rideMatch = 1;
+      ctlYesterday = ctlToday;
     }
 
     if (rideCheck.match == 0) {
-      ctlToday = ctlYesterday + ((0 - ctlYesterday) / (42))
+      ctlToday = ctlYesterday + ((0 - ctlYesterday) / (42));
       data.push({
-        date: new Date(d),
+        date: d.toLocaleDateString("en-gb", dateOptions),
         ctl: ctlToday
-      })
+      });
       ctlYesterday = ctlToday;
     }
 

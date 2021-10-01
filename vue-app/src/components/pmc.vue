@@ -1,11 +1,12 @@
 <template>
 <div>
-  <form @submit.prevent='submit'>
+  <form @submit.prevent='changeView'>
     <label>Trailing Days</label>
     <input type='text' class='form-control' v-model='trailingDays' placeholder='Number of trailing days' />
-    <label>Forecast Days</label>
-    <input type='text' class='form-control' v-model='forecastDays' placeholder='Number of forecast days' />
-    <button>Update</button>
+<!-- Forecast days needs configuring on backend -->
+    <!-- <label>Forecast Days</label>
+    <input type='text' class='form-control' v-model='forecastDays' placeholder='Number of forecast days' /> -->
+    <button type='submit'>Update</button>
   </form>
   <canvas id="pmc"></canvas>
 </div>
@@ -18,8 +19,9 @@ export default {
   name: 'pmc',
   data(){
     return {
-      trailingDays: 90,
+      trailingDays: 20,
       forecastDays: 15,
+      pmc: null,
       pmcData: {
         type: "line",
         data: {
@@ -29,6 +31,20 @@ export default {
               label: "CTL",
               data: null,
               backgroundColor: "rgba(54,73,93,.5)",
+              borderColor: "#36495d",
+              borderWidth: 3
+            },
+            {
+              label: "ATL",
+              data: null,
+              backgroundColor: "red",
+              borderColor: "#36495d",
+              borderWidth: 3
+            },
+            {
+              label: "TSB",
+              data: null,
+              backgroundColor: "green",
               borderColor: "#36495d",
               borderWidth: 3
             },
@@ -55,46 +71,55 @@ export default {
     user : function(){return this.$store.getters.StateUser}
   },
   methods:{
+    // Fetch initial PMC data
     async fetchPmc(){
-      var d;
+      // const ctx = document.getElementById('pmc');
+      var labels = [];
+      var ctl = [];
+
+      try{
+        // The API returns a 2d array containing CTL, then ATL, then TSB values
+        let pmc = await axios.get('/pmc/' + this.user);
+        for (var i = 1; i <= this.trailingDays; i++){
+          var arrLen = pmc.data.length
+
+          labels.unshift(pmc.data[arrLen-i].date)
+          ctl.unshift(pmc.data[arrLen-i].ctl);
+        }
+      } catch(err) {
+        console.log(err)
+      }
+      this.pmcData.data.labels = labels;
+      this.pmcData.data.datasets[0].data = ctl;
+
+    },
+    // Redraw chart based on user selected periods
+    async changeView() {
       var labels = [];
       var ctl = [];
 
       // Work on PMC so you can look at a date range and even forecast
       try{
-        var pmc = await axios.get('/pmc/' + this.user)
-        pmc.data.forEach(point=>{
-          d = new Date(point.date)
-          console.log(d.toLocaleDateString('en-GB'))
-          labels.push(d.toLocaleDateString('en-GB'));
-          ctl.push(point.ctl);
-        })
-      } catch(err) {
+        let pmc = await axios.get('/pmc/' + this.user);
+        for (var i = 1; i <= this.trailingDays; i++){
+          var arrLen = pmc.data.length
+          console.log(pmc.data[arrLen-i].date)
+          labels.unshift(pmc.data[arrLen-i].date)
+          ctl.unshift(pmc.data[arrLen-i].ctl);
+      }
+    } catch(err) {
         console.log(err)
       }
-
-      // try{
-      //   var pmc = await axios.get('/pmc/' + this.user)
-      //   for (var i = this.trailingDays; i >=1; i--){
-      //     d = d.setDate(d.getDate()-i)
-      //     console.log(d.toLocaleDateString('en-GB'))
-      //     labels.push(d.toLocaleDateString('en-GB'));
-      //     pmc.data.forEach(point =>{
-      //       if (d.getDate)ctl.push(point.ctl);
-      //     })
-      //
-      //   })
-      // } catch(err) {
-      //   console.log(err)
-      // }
       this.pmcData.data.labels = labels;
       this.pmcData.data.datasets[0].data = ctl;
-    }
+      this.pmc.update();
+}
   },
   async created(){
    await this.fetchPmc();
-   const ctx = document.getElementById('pmc');
-   new Chart(ctx, this.pmcData);
+   const canvas = document.getElementById('pmc');
+   this.pmc = Chart.Line(canvas, this.pmcData);
+   this.pmc;
   },
 
 }

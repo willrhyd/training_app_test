@@ -1,4 +1,4 @@
-// jshint esversion: 6
+// jshint esversion: 8
 
 const express = require("express");
 const app = express();
@@ -108,8 +108,9 @@ const User = connection.User;
 
 function uploadDB(req, res, next) {
   req.parsedFiles.forEach(file => {
-    const nPwr = fit.getNP(file)
+    const nPwr = fit.getNP(file);
     const duration = file.sessions[0].total_timer_time;
+    console.log(file);
     // console.log(req.user.ftp)
     const dbRide = new Ride({
       data: JSON.stringify(file.sessions[0]),
@@ -144,12 +145,13 @@ app.get('/showRides/:dateOne.:dateTwo', ensureAuthenticated, async (req, res, ne
     user: req.user.username
   }, function(err, docs) {
     if (err) {
-      console.log(err)
+      console.log(err);
     }
     for (var i = 0; i < docs.length; i++) {
       var rideObj = new Object();
       rideObj.date = docs[i].date;
       rideObj.distance = docs[i].distance;
+      rideObj.duration = docs[i].duration;
       rideObj.np = docs[i].nPwr;
       rideObj.tss = docs[i].tss;
       rideObj.id = docs[i]._id;
@@ -163,21 +165,28 @@ app.get('/showRides/:dateOne.:dateTwo', ensureAuthenticated, async (req, res, ne
 });
 
 app.get('/showRide/:id', async function(req, res) {
+  try {
   let rides = await Ride.find({
     _id: req.params.id
   }, function(err, docs) {
-    console.log(req.params.id)
+    // console.log(docs[0])
     if (err) {
-      console.log(err)
+      console.log(err);
     }
-    var rideObj = new Object();
-    rideObj.date = docs[0].date;
-    rideObj.distance = docs[0].distance;
-    rideObj.np = docs[0].nPwr;
-    rideObj.id = docs[0]._id
+    let rideObj = {
+      date: docs[0].date,
+      distance: docs[0].distance,
+      duration: docs[0].duration,
+      np: docs[0].nPwr,
+      id: docs[0]._id,
+    };
     res.locals.rideObj = rideObj;
+
   });
   res.send(res.locals.rideObj);
+} catch (err) {
+  console.log(err)
+}
 });
 
 app.post('/fileUpload', ensureAuthenticated, upload.any('multi-files'), fit.parseFIT, uploadDB, function(req, res) {
@@ -189,7 +198,7 @@ app.post('/fileUpload', ensureAuthenticated, upload.any('multi-files'), fit.pars
 
 app.post('/register', function(req, res) {
 
-  // This could do with going into middleware
+
   if (req.body.password !== req.body.passwordConfirm) {
     return res.status(500).json({
       msg: "Passwords do not match"
@@ -212,6 +221,7 @@ app.post('/register', function(req, res) {
     })
     .catch((err) => {
       console.log(err)
+      res.status(401)
     });
   res.sendStatus;
 });
@@ -219,7 +229,10 @@ app.post('/register', function(req, res) {
 app.post('/login', passport.authenticate('local'), ensureAuthenticated, function(req, res) {
 
   res.status(200).json({
-    msg: "Signed in successfully"
+    msg: "Signed in successfully",
+    // Return user settings such as ftp so that they are available for saving in the Vuex Store
+    ftp: req.user.ftp,
+    weight: req.user.weight
   });
 
 });
@@ -231,26 +244,58 @@ app.get('/logout', function(req, res) {
   });
 });
 
-app.delete('/file_delete/:id', function(req, res) {
-  // Build delete route here
+app.delete('/file_delete/:id', ensureAuthenticated, async function(req, res) {
+  console.log(req.params.id)
+  try {
+    var deletedRide = await Ride.deleteOne({
+      _id: req.params.id
+    }).exec()
+    console.log(deletedRide)
+    if(deletedRide.deletedCount > 0) {
+      res.sendStatus(200);
+    } else { err = new Error()}
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 app.get('/pmc/:user', ensureAuthenticated, async function(req, res) {
-  console.log("PMC called");
   try {
     var rides = await Ride.find({
       user: req.user.username
     }).sort({
       date: 'asc'
-    })
-      var data = fit.pmc(rides)
-      res.send(data)
+    });
+      var data = fit.pmc(rides);
+      res.send(data);
 
   } catch (err) {
     console.log(err);
   }
-})
+});
+
+app.put('/userupdate/:user', ensureAuthenticated, async function(req, res){
+  console.log( req.body.weight)
+var filter = {username: req.user.username};
+var update = {
+  ftp: req.body.ftp,
+  weight: req.body.weight,
+};
+  try {
+    var updatedUser = await User.findOneAndUpdate(filter, update, {
+      new: true
+    });
+    res.send({
+      // Choose which fields to send back for the Vuex Store
+      username:updatedUser.username,
+      ftp:updatedUser.ftp,
+      weight: updatedUser.weight,
+    });
+  } catch (err){
+    console.log(err);
+  }
+});
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
-})
+  console.log(`Example app listening at http://localhost:${port}`);
+});

@@ -1,9 +1,11 @@
 <template>
-<div class="file">
-  <form @submit.prevent="onSubmit" ref="uploadForm" enctype="multipart/form-data">
+<div class="uploadContainer">
+  <font-awesome-icon id="uploadPlus" :icon="['far', 'plus-square']" size="2x" @click="clickPlus();"/>
+  <form id="hiddenSubmitForm" @submit.prevent="onSubmit" ref="uploadForm" enctype="multipart/form-data">
+
     <div class="fields">
       <label>Upload File</label><br />
-      <input type="file" multiple="multiple" ref="file" @change="onSelect" />
+      <input type="file" multiple="multiple" ref="file" @change="onSelect(); onSubmit();" />
     </div>
     <div class="fields">
       <button>Submit</button>
@@ -27,6 +29,9 @@ export default {
       }
   },
   methods: {
+    clickPlus(){
+      this.$refs.file.click();
+    },
     onSelect() {
       // const allowedTypes = ["fit"];
       const file = this.$refs.file.files[0];
@@ -52,7 +57,7 @@ export default {
 
         if(submit.status == 200){
           this.$emit('ridesSubmitted')
-
+          this.$emit('rideUploadEvent')
           this.$refs.uploadForm.reset();
           // Add action here to reset the calendar follwoing submit
         }
@@ -64,3 +69,15 @@ export default {
   }
 }
 </script>
+
+<style>
+#hiddenSubmitForm{
+  display: none;
+}
+
+.uploadContainer{
+  text-align: center;
+  display: inline-block;
+  
+}
+</style>

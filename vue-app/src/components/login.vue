@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div id="login">
+    <navbar id="navBar"/>
     <p v-if="showError" id="error">Username or Password is incorrect</p>
     <form @submit.prevent='submit'>
       <div class= 'form-group'>
@@ -19,9 +20,13 @@
 </template>
 
 <script>
+import navbar from './navbar.vue'
 import { mapActions } from "vuex";
-export default{
-  name: 'login',
+export default {
+  name: "login",
+  components: {
+    navbar
+  },
   data(){
     return{
         username:'',
@@ -57,3 +62,7 @@ export default{
 
 
 </script>
+<style>
+
+
+</style>
